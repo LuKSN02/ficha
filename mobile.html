@@ -21,32 +21,23 @@
 
         input, select, textarea { width: 100%; background: #000; border: 1px solid var(--borda); color: #fff; padding: 10px; font-family: inherit; margin-bottom: 8px; border-radius: 4px; }
         
-        /* GRID ATRIBUTOS - Otimizado para Mobile (2 ou 3 colunas) */
         .grid-atributos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .atrib-box { text-align: center; border: 1px solid var(--borda); padding: 8px; cursor: pointer; transition: 0.2s; }
-        .atrib-box:hover { border-color: var(--ouro); }
-        
-        /* CORREÇÃO: Liberado o clique para alterar valores */
-        .atrib-val { 
-            font-size: 1.4rem; border: none; border-bottom: 2px solid var(--sangue); 
-            text-align: center; background: transparent; width: 100%; color: white;
-            pointer-events: auto !important; cursor: text;
-        }
+        .atrib-box { text-align: center; border: 1px solid var(--borda); padding: 8px; cursor: pointer; }
+        .atrib-val { font-size: 1.4rem; border: none; border-bottom: 2px solid var(--sangue); text-align: center; background: transparent; width: 100%; color: white; pointer-events: auto !important; }
 
         .status-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; background: #000; padding: 12px; border: 1px dashed var(--sangue); margin: 10px 0; }
         .status-item { text-align: center; }
-        .status-item label { font-size: 0.7rem; display: block; }
-        .status-item span { font-size: 1.4rem; color: var(--sangue); font-weight: bold; }
+        .status-item label { font-size: 0.6rem; display: block; }
+        .status-item span { font-size: 1.4rem; color: var(--sangue); font-weight: bold; display: block; }
+        .status-item small { font-size: 0.5rem; color: #666; display: block; }
+
+        .btn-status-mob { background: transparent; border: 1px solid var(--sangue); color: var(--sangue); padding: 8px 0; width: 45%; font-weight: bold; margin-top: 5px; font-size: 0.8rem; }
 
         #lista-personagens { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--sangue); }
         .btn-personagem { background: #1a1a1a; color: #666; border: 1px solid #333; padding: 6px 12px; cursor: pointer; white-space: nowrap; font-size: 0.8rem; }
         .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); }
 
         button { background: transparent; border: 1px solid var(--sangue); color: var(--sangue); padding: 12px; font-family: inherit; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 5px; }
-        button:hover { background: var(--sangue); color: white; }
-
-        .pericia-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 4px 0; }
-        .chk-pericia { width: auto; margin: 0; }
         
         .item-row { display: grid; grid-template-columns: 3fr 1fr; gap: 5px; margin-bottom: 5px; }
     </style>
@@ -56,9 +47,9 @@
     <section id="tela-login">
         <div style="background: #121212; padding: 30px; border: 1px solid var(--borda); border-top: 4px solid var(--sangue); text-align: center; width: 90%; max-width: 350px;">
             <h2 style="color: var(--sangue);">ORDO REALITAS</h2>
-            <p style="font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 20px;">TERMINAL MOBILE V1.1</p>
+            <p style="font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 20px;">TERMINAL MOBILE V1.2</p>
             <input type="text" id="user" placeholder="NOME DO AGENTE">
-            <button onclick="fazerLogin()">Acessar Ficha</button>
+            <button onclick="fazerLogin()">Acessar</button>
         </div>
     </section>
 
@@ -81,7 +72,6 @@
             </div>
 
             <div class="secao">
-                <label style="text-align: center; display: block; font-size: 0.7rem; color: var(--ouro); margin-bottom: 10px;">TOQUE NO ATRIBUTO PARA ROLAR</label>
                 <div class="grid-atributos">
                     <div class="atrib-box" onclick="rolarTeste('FOR')"><label>FOR</label><input type="number" class="atrib-val" id="for" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
                     <div class="atrib-box" onclick="rolarTeste('AGI')"><label>AGI</label><input type="number" class="atrib-val" id="agi" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
@@ -92,33 +82,53 @@
             </div>
 
             <div class="status-box">
-                <div class="status-item"><label>PV</label><span id="res-pv">0</span></div>
-                <div class="status-item"><label>PE</label><span id="res-pe">0</span></div>
-                <div class="status-item"><label>SAN</label><span id="res-san">0</span></div>
+                <div class="status-item">
+                    <label>PV</label><span id="res-pv">0</span>
+                    <div style="display: flex; justify-content: center; gap: 2px;">
+                        <button class="btn-status-mob" onclick="alterarStatus('pv', -1)">-</button>
+                        <button class="btn-status-mob" onclick="alterarStatus('pv', 1)">+</button>
+                    </div>
+                    <small>MÁX: <span id="max-pv">0</span></small>
+                </div>
+                <div class="status-item">
+                    <label>PE</label><span id="res-pe">0</span>
+                    <div style="display: flex; justify-content: center; gap: 2px;">
+                        <button class="btn-status-mob" onclick="alterarStatus('pe', -1)">-</button>
+                        <button class="btn-status-mob" onclick="alterarStatus('pe', 1)">+</button>
+                    </div>
+                    <small>MÁX: <span id="max-pe">0</span></small>
+                </div>
+                <div class="status-item">
+                    <label>SAN</label><span id="res-san">0</span>
+                    <div style="display: flex; justify-content: center; gap: 2px;">
+                        <button class="btn-status-mob" onclick="alterarStatus('san', -1)">-</button>
+                        <button class="btn-status-mob" onclick="alterarStatus('san', 1)">+</button>
+                    </div>
+                    <small>MÁX: <span id="max-san">0</span></small>
+                </div>
             </div>
+            <button onclick="descansoLongo()" style="border-color: var(--ouro); color: var(--ouro); margin-bottom: 10px;">☕ Descanso Longo</button>
 
             <div class="secao">
-                <h3>Dados</h3>
                 <div style="background: #000; padding: 10px; text-align: center; border: 1px solid var(--borda);">
-                    <div id="log-dados" style="font-size: 0.6rem; color: #666;">AGUARDANDO ROLAGEM...</div>
+                    <div id="log-dados" style="font-size: 0.6rem; color: #666;">AGUARDANDO...</div>
                     <div id="resultado-dado" style="font-size: 2rem; color: var(--ouro); font-weight: bold;">0</div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px;">
                     <button onclick="rolarD(20)">D20</button>
                     <button onclick="rolarD(6)">D6</button>
-                    <button onclick="rolarD(10)">D10</button>
                 </div>
             </div>
 
             <div class="secao">
-                <h3>Perícias (<span id="count-pericias">0</span> Limite)</h3>
+                <h3>Perícias (<span id="count-pericias">0</span>)</h3>
                 <div id="lista-pericias" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
             </div>
 
             <div class="secao">
                 <h3>Inventário</h3>
                 <div id="itens-container"></div>
-                <button onclick="addItem()">+ Adicionar Item</button>
+                <button onclick="addItem()">+ Item</button>
                 <div style="font-size: 0.8rem; color: var(--ouro); text-align: right; margin-top: 10px;">
                     CARGA: <span id="carga-atual">0</span> / <span id="carga-max">0</span>
                 </div>
@@ -147,30 +157,44 @@
 
         function rolarD(lados) {
             const r = Math.floor(Math.random() * lados) + 1;
-            document.getElementById('log-dados').innerText = `RESULTADO 1D${lados}:`;
+            document.getElementById('log-dados').innerText = `1D${lados}:`;
             document.getElementById('resultado-dado').innerText = r;
         }
 
         function rolarTeste(atrib) {
-            const qtd = parseInt(document.getElementById(atrib.toLowerCase()).value) || 0;
-            let resultados = [];
-            if(qtd <= 0) {
+            const val = parseInt(document.getElementById(atrib.toLowerCase()).value) || 0;
+            if(val <= 0) {
                 let d1 = Math.floor(Math.random() * 20) + 1;
                 let d2 = Math.floor(Math.random() * 20) + 1;
-                document.getElementById('log-dados').innerText = `TESTE ${atrib} (DEFICIT): [${d1}, ${d2}]`;
+                document.getElementById('log-dados').innerText = `TESTE ${atrib} (DEFICIT):`;
                 document.getElementById('resultado-dado').innerText = Math.min(d1, d2);
             } else {
-                for(let i=0; i<qtd; i++) resultados.push(Math.floor(Math.random() * 20) + 1);
-                document.getElementById('log-dados').innerText = `TESTE ${atrib}: [${resultados.join(', ')}]`;
-                document.getElementById('resultado-dado').innerText = Math.max(...resultados);
+                let r = [];
+                for(let i=0; i<val; i++) r.push(Math.floor(Math.random() * 20) + 1);
+                document.getElementById('log-dados').innerText = `TESTE ${atrib}:`;
+                document.getElementById('resultado-dado').innerText = Math.max(...r);
             }
+        }
+
+        function alterarStatus(tipo, valor) {
+            const span = document.getElementById(`res-${tipo}`);
+            let atual = parseInt(span.innerText) || 0;
+            span.innerText = Math.max(0, atual + valor);
+            salvarDados();
+        }
+
+        function descansoLongo() {
+            document.getElementById('res-pv').innerText = document.getElementById('max-pv').innerText;
+            document.getElementById('res-pe').innerText = document.getElementById('max-pe').innerText;
+            document.getElementById('res-san').innerText = document.getElementById('max-san').innerText;
+            salvarDados();
         }
 
         function gerarCheckboxesPericias() {
             const container = document.getElementById('lista-pericias');
             container.innerHTML = PERICIAS_LISTA.map(p => `
                 <label class="pericia-item">
-                    <input type="checkbox" class="chk-pericia" data-nome="${p}" onchange="validarLimitePericias(this)"> ${p}
+                    <input type="checkbox" class="chk-pericia" data-nome="${p}" onchange="salvarDados()"> ${p}
                 </label>
             `).join('');
         }
@@ -195,16 +219,13 @@
 
             const n = Math.floor((nx - 5) / 5);
             let pv, pe, san;
-
             if(cl==='combatente'){ pv=(20+vig)+(4+vig)*n; pe=(2+pre)+(2+pre)*n; san=12+3*n; }
             else if(cl==='especialista'){ pv=(16+vig)+(3+vig)*n; pe=(3+pre)+(3+pre)*n; san=16+4*n; }
             else { pv=(12+vig)+(2+vig)*n; pe=(4+pre)+(4+pre)*n; san=20+5*n; }
 
-            document.getElementById('res-pv').innerText = pv;
-            document.getElementById('res-pe').innerText = pe;
-            document.getElementById('res-san').innerText = san;
-            
-            // CORREÇÃO: Removido erro 'qualquer'
+            document.getElementById('max-pv').innerText = pv;
+            document.getElementById('max-pe').innerText = pe;
+            document.getElementById('max-san').innerText = san;
             document.getElementById('count-pericias').innerText = (cl==='especialista' ? 7 : 3) + int;
 
             const cargaMax = 5 + (forca * 5);
@@ -217,17 +238,6 @@
             salvarDados();
         }
 
-        function validarLimitePericias(el) {
-            const int = parseInt(document.getElementById('int').value) || 0;
-            const cl = document.getElementById('classe').value;
-            const limite = (cl === 'especialista' ? 7 : 3) + int;
-            if (document.querySelectorAll('.chk-pericia:checked').length > limite) {
-                alert("Limite de perícias treinadas atingido!");
-                el.checked = false;
-            }
-            salvarDados();
-        }
-
         function salvarDados() {
             if(!personagens[indexAtual]) return;
             const p = personagens[indexAtual];
@@ -235,11 +245,14 @@
             p.nex = document.getElementById('nex').value;
             p.classe = document.getElementById('classe').value;
             p.atributos = {
-                for: document.getElementById('for').value,
-                agi: document.getElementById('agi').value,
-                int: document.getElementById('int').value,
-                vig: document.getElementById('vig').value,
+                for: document.getElementById('for').value, agi: document.getElementById('agi').value,
+                int: document.getElementById('int').value, vig: document.getElementById('vig').value,
                 pre: document.getElementById('pre').value
+            };
+            p.statusAtuais = {
+                pv: document.getElementById('res-pv').innerText,
+                pe: document.getElementById('res-pe').innerText,
+                san: document.getElementById('res-san').innerText
             };
             p.pericias = Array.from(document.querySelectorAll('.chk-pericia:checked')).map(c => c.dataset.nome);
             localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
@@ -258,10 +271,18 @@
             document.getElementById('vig').value = p.atributos?.vig || 1;
             document.getElementById('pre').value = p.atributos?.pre || 1;
             
-            document.querySelectorAll('.chk-pericia').forEach(c => {
-                c.checked = p.pericias?.includes(c.dataset.nome);
-            });
+            document.querySelectorAll('.chk-pericia').forEach(c => c.checked = p.pericias?.includes(c.dataset.nome));
+            
             atualizarTudo();
+            if(p.statusAtuais) {
+                document.getElementById('res-pv').innerText = p.statusAtuais.pv;
+                document.getElementById('res-pe').innerText = p.statusAtuais.pe;
+                document.getElementById('res-san').innerText = p.statusAtuais.san;
+            } else {
+                document.getElementById('res-pv').innerText = document.getElementById('max-pv').innerText;
+                document.getElementById('res-pe').innerText = document.getElementById('max-pe').innerText;
+                document.getElementById('res-san').innerText = document.getElementById('max-san').innerText;
+            }
         }
 
         function novoPersonagem() {
@@ -270,7 +291,7 @@
         }
 
         function deletarAtual() {
-            if(confirm("Deseja apagar este agente?")) {
+            if(confirm("Apagar agente?")) {
                 personagens.splice(indexAtual, 1);
                 if(personagens.length === 0) novoPersonagem();
                 else carregarPersonagem(0);
