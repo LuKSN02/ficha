@@ -123,6 +123,15 @@
     </section>
 
     <script>
+
+        // Verifica se a tela é menor que 768px (tamanho padrão de tablet/celular)
+if (window.innerWidth <= 768) {
+    // Redireciona para o arquivo da versão mobile
+    // Certifique-se de que o nome do arquivo mobile seja exatamente este:
+    window.location.href = "mobile.html";
+}
+
+
         const PERICIAS_LISTA = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
         const TRILHAS_DB = {
             combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"],
