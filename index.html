@@ -123,13 +123,17 @@
     </section>
 
     <script>
+ // Versão ultra-compatível de redirecionamento
+    (function() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSmallScreen = window.innerWidth <= 800;
 
-        // Verifica se a tela é menor que 768px (tamanho padrão de tablet/celular)
-if (window.innerWidth <= 768) {
-    // Redireciona para o arquivo da versão mobile
-    // Certifique-se de que o nome do arquivo mobile seja exatamente este:
-    window.location.href = "mobile.html";
-}
+        if (isMobile || isSmallScreen) {
+            window.location.href = "mobile.html";
+        }
+    })();
+
+    // Restante do seu código (PERICIAS_LISTA, personagens, etc.) abaixo...
 
 
         const PERICIAS_LISTA = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
