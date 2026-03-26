@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>S.I.G.O. - Mobile</title>
+    <title>S.I.G.O. - Mobile V1.3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com');
@@ -38,8 +38,6 @@
         .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); }
 
         button { background: transparent; border: 1px solid var(--sangue); color: var(--sangue); padding: 12px; font-family: inherit; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 5px; }
-        
-        .item-row { display: grid; grid-template-columns: 3fr 1fr; gap: 5px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -47,7 +45,7 @@
     <section id="tela-login">
         <div style="background: #121212; padding: 30px; border: 1px solid var(--borda); border-top: 4px solid var(--sangue); text-align: center; width: 90%; max-width: 350px;">
             <h2 style="color: var(--sangue);">ORDO REALITAS</h2>
-            <p style="font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 20px;">TERMINAL MOBILE V1.2</p>
+            <p style="font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 20px;">TERMINAL MOBILE V1.3</p>
             <input type="text" id="user" placeholder="NOME DO AGENTE">
             <button onclick="fazerLogin()">Acessar</button>
         </div>
@@ -70,6 +68,9 @@
                     </select>
                 </div>
             </div>
+
+            <!-- CAMPO DE TRILHA ADICIONADO -->
+            <div style="margin-top: 5px;"><label>TRILHA</label><select id="trilha" onchange="salvarDados()"></select></div>
 
             <div class="secao">
                 <div class="grid-atributos">
@@ -110,11 +111,9 @@
             <button onclick="descansoLongo()" style="border-color: var(--ouro); color: var(--ouro); margin-bottom: 10px;">☕ Descanso Longo</button>
 
             <div class="secao">
-                <div style="background: #000; padding: 10px; text-align: center; border: 1px solid var(--borda);">
-                    <div id="log-dados" style="font-size: 0.6rem; color: #666;">AGUARDANDO...</div>
-                    <div id="resultado-dado" style="font-size: 2rem; color: var(--ouro); font-weight: bold;">0</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px;">
+                <div id="log-dados" style="font-size: 0.6rem; color: #666; text-align: center;">AGUARDANDO...</div>
+                <div id="resultado-dado" style="font-size: 2rem; color: var(--ouro); font-weight: bold; text-align: center;">0</div>
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
                     <button onclick="rolarD(20)">D20</button>
                     <button onclick="rolarD(6)">D6</button>
                 </div>
@@ -125,15 +124,6 @@
                 <div id="lista-pericias" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
             </div>
 
-            <div class="secao">
-                <h3>Inventário</h3>
-                <div id="itens-container"></div>
-                <button onclick="addItem()">+ Item</button>
-                <div style="font-size: 0.8rem; color: var(--ouro); text-align: right; margin-top: 10px;">
-                    CARGA: <span id="carga-atual">0</span> / <span id="carga-max">0</span>
-                </div>
-            </div>
-
             <button onclick="novoPersonagem()" style="margin-top: 20px; border-color: #222; color: #555;">+ Novo Agente</button>
             <button onclick="deletarAtual()" style="margin-top: 10px; border-color: #444; color: #444;">Deletar Agente</button>
         </div>
@@ -142,6 +132,12 @@
     <script>
         const PERICIAS_LISTA = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
         
+        const TRILHAS_DB = {
+            combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"],
+            especialista: ["Atirador Elite", "Infiltrador", "Médico Campo", "Negociador", "Técnico"],
+            ocultista: ["Conduíte", "Flagelador", "Graduado", "Lâmina", "Intuitivo"]
+        };
+
         let personagens = JSON.parse(localStorage.getItem('ordem_fichas')) || [];
         let indexAtual = 0;
 
@@ -199,41 +195,33 @@
             `).join('');
         }
 
-        function addItem(nome = "", peso = 1) {
-            const container = document.getElementById('itens-container');
-            const div = document.createElement('div');
-            div.className = 'item-row';
-            div.innerHTML = `<input type="text" placeholder="Item" value="${nome}" oninput="salvarDados()">
-                             <input type="number" value="${peso}" onchange="atualizarTudo()" class="item-peso" style="width: 60px;">`;
-            container.appendChild(div);
-            atualizarTudo();
-        }
-
         function atualizarTudo() {
-            const cl = document.getElementById('classe').value;
-            const nx = parseInt(document.getElementById('nex').value) || 5;
-            const forca = parseInt(document.getElementById('for').value) || 0;
+            const classe = document.getElementById('classe').value;
+            const nex = parseInt(document.getElementById('nex').value) || 5;
             const vig = parseInt(document.getElementById('vig').value) || 0;
             const pre = parseInt(document.getElementById('pre').value) || 0;
             const int = parseInt(document.getElementById('int').value) || 0;
 
-            const n = Math.floor((nx - 5) / 5);
+            // Trilhas
+            const selTrilha = document.getElementById('trilha');
+            selTrilha.disabled = nex < 10;
+            if(nex < 10) {
+                selTrilha.innerHTML = "<option>Bloqueado</option>";
+            } else {
+                const atualT = selTrilha.value;
+                selTrilha.innerHTML = TRILHAS_DB[classe].map(t => `<option ${t===atualT?'selected':''}>${t}</option>`).join('');
+            }
+
+            const n = Math.floor((nex - 5) / 5);
             let pv, pe, san;
-            if(cl==='combatente'){ pv=(20+vig)+(4+vig)*n; pe=(2+pre)+(2+pre)*n; san=12+3*n; }
-            else if(cl==='especialista'){ pv=(16+vig)+(3+vig)*n; pe=(3+pre)+(3+pre)*n; san=16+4*n; }
+            if(classe==='combatente'){ pv=(20+vig)+(4+vig)*n; pe=(2+pre)+(2+pre)*n; san=12+3*n; }
+            else if(classe==='especialista'){ pv=(16+vig)+(3+vig)*n; pe=(3+pre)+(3+pre)*n; san=16+4*n; }
             else { pv=(12+vig)+(2+vig)*n; pe=(4+pre)+(4+pre)*n; san=20+5*n; }
 
             document.getElementById('max-pv').innerText = pv;
             document.getElementById('max-pe').innerText = pe;
             document.getElementById('max-san').innerText = san;
-            document.getElementById('count-pericias').innerText = (cl==='especialista' ? 7 : 3) + int;
-
-            const cargaMax = 5 + (forca * 5);
-            let cargaAtual = 0;
-            document.querySelectorAll('.item-peso').forEach(i => cargaAtual += parseInt(i.value) || 0);
-            document.getElementById('carga-max').innerText = cargaMax;
-            document.getElementById('carga-atual').innerText = cargaAtual;
-            document.getElementById('carga-atual').style.color = cargaAtual > cargaMax ? "red" : "var(--ouro)";
+            document.getElementById('count-pericias').innerText = (classe==='especialista' ? 7 : 3) + int;
 
             salvarDados();
         }
@@ -244,6 +232,7 @@
             p.nome = document.getElementById('nome-agente').value;
             p.nex = document.getElementById('nex').value;
             p.classe = document.getElementById('classe').value;
+            p.trilha = document.getElementById('trilha').value; // Salvando trilha
             p.atributos = {
                 for: document.getElementById('for').value, agi: document.getElementById('agi').value,
                 int: document.getElementById('int').value, vig: document.getElementById('vig').value,
@@ -265,15 +254,20 @@
             document.getElementById('nome-agente').value = p.nome || "";
             document.getElementById('nex').value = p.nex || 5;
             document.getElementById('classe').value = p.classe || "combatente";
+            
+            // Atributos
             document.getElementById('for').value = p.atributos?.for || 1;
             document.getElementById('agi').value = p.atributos?.agi || 1;
             document.getElementById('int').value = p.atributos?.int || 1;
             document.getElementById('vig').value = p.atributos?.vig || 1;
             document.getElementById('pre').value = p.atributos?.pre || 1;
             
+            // Rodar atualização para liberar trilha antes de carregar o valor dela
+            atualizarTudo();
+            document.getElementById('trilha').value = p.trilha || "";
+            
             document.querySelectorAll('.chk-pericia').forEach(c => c.checked = p.pericias?.includes(c.dataset.nome));
             
-            atualizarTudo();
             if(p.statusAtuais) {
                 document.getElementById('res-pv').innerText = p.statusAtuais.pv;
                 document.getElementById('res-pe').innerText = p.statusAtuais.pe;
@@ -302,7 +296,7 @@
             const container = document.getElementById('lista-personagens');
             container.innerHTML = personagens.map((p, i) => `
                 <div class="btn-personagem ${i===indexAtual?'ativo':''}" onclick="carregarPersonagem(${i})">
-                    ${p.nome || 'S/ NOME'}
+                    ${p.nome || 'AGENTE'}
                 </div>
             `).join('');
         }
