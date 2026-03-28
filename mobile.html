@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S.I.G.O. - Mobile V3.1 PRO</title>
+    <script src="https://cdnjs.cloudflare.com"></script>
     <style>
+
+        
         @import url('https://fonts.googleapis.com');
         
         :root { 
@@ -75,6 +78,28 @@
         .btn-personagem { background: #000; color: #444; border: 1px solid #222; padding: 8px 12px; white-space: nowrap; font-size: 0.65rem; }
         .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); border-bottom-width: 3px; }
         .arma-row, .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 30px; gap: 5px; margin-bottom: 5px; }
+        @media print {
+    /* Esconde tudo que não é a ficha (botões, login, etc) */
+    body * { visibility: hidden; background: #000 !important; }
+    #dashboard, .container-ficha, .container-ficha * { visibility: visible; }
+    
+    /* Reposiciona a ficha no topo da página do PDF */
+    .container-ficha {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Esconde botões de deletar e adicionar dentro da ficha no PDF */
+    button, .btn-del, #lista-personagens { display: none !important; }
+    
+    /* Garante que as cores de fundo (Barras de PV/SAN) apareçam */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+
     </style>
 </head>
 <body>
@@ -151,6 +176,10 @@
             <div class="secao"><h3>Perícias (<span id="count-per">0</span>)</h3><div id="lista-pericias" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div></div>
             <div class="secao"><h3>Rituais (Círculo: <b id="circ-max">1º</b>)</h3><textarea id="rituais" rows="4" oninput="salvarDados()"></textarea></div>
             <button onclick="deletarAgente()" style="background:transparent; border:none; color:#222; width:100%; margin-top:40px; font-size:0.55rem;">DELETAR AGENTE PERMANENTEMENTE</button>
+            <button onclick="exportarPDF()" style="background: #1a1a1a; color: var(--ouro); border-color: var(--ouro); width:100%; font-size: 0.6rem; margin-top: 40px;">
+            📂 EXPORTAR FICHA (PDF)
+            </button>
+
         </div>
     </section>
 
@@ -296,6 +325,18 @@
         function atualizarOrigem() { document.getElementById('desc-origem').innerText = "Bônus: " + (ORIGENS[document.getElementById('origem').value] || "Nenhum"); salvarDados(); }
         function mudarFoto() { const url = prompt("URL da Foto:"); if(url) document.getElementById('img-retrato').src = url; }
         function deletarAgente() { if(confirm("Apagar permanentemente?")) { personagens.splice(indexAt, 1); if(personagens.length===0) novoAgente(); else carregarAgente(0); } }
+
+function exportarPDF() {
+    // 1. Tira o brilho de glitch e animações que podem bugar o PDF
+    const abas = document.querySelectorAll('.btn-personagem');
+    abas.forEach(a => a.classList.remove('aba-glitch'));
+
+    // 2. Comando nativo do navegador para imprimir
+    // Dica: Na janela que abrir, escolha "Salvar como PDF" no destino da impressora
+    window.print();
+}
+
+
     </script>
 </body>
 </html>

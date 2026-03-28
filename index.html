@@ -13,6 +13,8 @@
         }
     </script>
 
+    <script src="https://cdnjs.cloudflare.com"></script>
+
     <style>
         @import url('https://fonts.googleapis.com');
         
@@ -465,11 +467,52 @@
             75% { transform: translate(-1px, -1px); }
             100% { transform: translate(1px, 1px); }
         }
+        .aba-glitch {
+            color: #fff !important;
+            text-shadow: 2px 0 #ff0000, -2px 0 #4b0082, 0 0 10px #ff0000;
+            border-color: var(--sangue-brilho) !important;
+        }
+        @media print {
+    /* Esconde tudo que não é a ficha (botões, login, etc) */
+    body * { visibility: hidden; background: #000 !important; }
+    #dashboard, .container-ficha, .container-ficha * { visibility: visible; }
+    
+    /* Reposiciona a ficha no topo da página do PDF */
+    .container-ficha {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Esconde botões de deletar e adicionar dentro da ficha no PDF */
+    button, .btn-del, #lista-personagens { display: none !important; }
+    
+    /* Garante que as cores de fundo (Barras de PV/SAN) apareçam */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    .carga-excedida {
+    color: #ff4444 !important;
+    text-shadow: 0 0 10px #ff0000;
+    font-weight: bold;
+    animation: pulsar-alerta 1s infinite;
+}
+
+@keyframes pulsar-alerta {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+}
 
     </style>
 </head>
 <body>
 
+    <input type="file" id="input-arquivo" style="display:none" accept="image/*" onchange="processarUpload(this)">    
     <div id="estatica-camada"></div>
     <audio id="snd-click" src="https://assets.mixkit.co"></audio>
     <audio id="snd-dice" src="https://assets.mixkit.co"></audio>
@@ -494,7 +537,11 @@
                     </div>
                     <div class="info-basica" style="flex:1">
                         <div style="display: flex; gap: 15px;">
-                            <div style="flex: 2;"><label>Agente</label><input type="text" id="nome-agente" oninput="salvarDados()"></div>
+                            <!-- Procure esta linha no seu código e deixe assim: -->
+                            <div style="flex: 2;">
+                            <label>Agente</label>
+                            <input type="text" id="nome-agente" oninput="salvarDados(); renderAbas()">
+                        </div>
                             <div style="flex: 1;"><label>NEX %</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
                         </div>
                         <div style="display: flex; gap: 15px;">
@@ -605,6 +652,10 @@
 
                 <button onclick="novoAgente()" style="font-size:0.6rem; margin-top:10px">+ Novo Agente</button>
                 <button onclick="deletarAtual()" style="color:#400; border-color:#400; font-size:0.6rem;">Remover Agente</button>
+                <button onclick="exportarPDF()" style="background: #1a1a1a; color: var(--ouro); border-color: var(--ouro); font-size: 0.6rem; margin-top: 10px;">
+                📂 EXPORTAR FICHA (PDF)
+            </button>
+
             </div>
         </div>
     </section>
@@ -793,9 +844,60 @@
             document.querySelectorAll('.item-w').forEach(i => carga += parseInt(i.value)||0);
             document.getElementById('carga-atual').innerText = carga;
 
+            const eAtleta = document.getElementById('origem').value === 'atleta';
+            const cargaMax = 5 + (forca * 5) + (eAtleta ? 2 : 0);
+    
+            document.getElementById('carga-max').innerText = cargaMax;
+
+    // Soma o peso de todos os itens da mochila
+    let cargaAtual = 0;
+    document.querySelectorAll('.item-w').forEach(input => {
+        cargaAtual += parseInt(input.value) || 0;
+    });
+
+    const spanCarga = document.getElementById('carga-atual');
+    spanCarga.innerText = cargaAtual;
+
+    // Alerta Visual de Carga Excessiva
+    if (cargaAtual > cargaMax) {
+        spanCarga.parentElement.classList.add('carga-excedida');
+    } else {
+        spanCarga.parentElement.classList.remove('carga-excedida');
+    }
+
+    // ... (mantenha o restante das suas funções de barras e salvamento) ...
+    function addItem(n="", w=1) {
+    const div = document.createElement('div'); 
+    div.className = "item-row";
+    // O segredo está no oninput="atualizarTudo()" abaixo:
+    div.innerHTML = `
+        <input type="text" placeholder="Item" value="${n}" oninput="salvarDados()">
+        <input type="number" class="item-w" value="${w}" oninput="atualizarTudo(); salvarDados()">
+        <button onclick="this.parentElement.remove(); atualizarTudo(); salvarDados()" class="btn-del">X</button>
+    `;
+    document.getElementById('itens-container').appendChild(div);
+    atualizarTudo();
+}
+
+
+
             atualizarBarras(); 
             salvarDados();
         }
+
+        function addItem(n="", w=1) {
+    const div = document.createElement('div'); 
+    div.className = "item-row";
+    // O segredo está no oninput="atualizarTudo()" abaixo:
+    div.innerHTML = `
+        <input type="text" placeholder="Item" value="${n}" oninput="salvarDados()">
+        <input type="number" class="item-w" value="${w}" oninput="atualizarTudo(); salvarDados()">
+        <button onclick="this.parentElement.remove(); atualizarTudo(); salvarDados()" class="btn-del">X</button>
+    `;
+    document.getElementById('itens-container').appendChild(div);
+    atualizarTudo();
+}
+
 
         function altStatus(t, v) {
             playSnd('click');
@@ -919,59 +1021,91 @@
         function salvarDados() {
             if(!personagens[indexAtual]) return;
             const p = personagens[indexAtual];
-            p.nome = document.getElementById('nome-agente').value;
+
+    // Atualiza o nome e a aba sem reconstruir o HTML (Evita quebrar o foco)
+            const novoNome = document.getElementById('nome-agente').value || 'S/ NOME';
+            p.nome = novoNome;
+    
+            const abas = document.querySelectorAll('.btn-personagem');
+            if (abas[indexAtual]) {
+             abas[indexAtual].innerText = novoNome.toUpperCase();
+            abas[indexAtual].classList.add('aba-glitch');
+            setTimeout(() => abas[indexAtual].classList.remove('aba-glitch'), 150);
+        }
+
+    // Salva o restante dos dados
             p.nex = document.getElementById('nex').value;
             p.classe = document.getElementById('classe').value;
             p.trilha = document.getElementById('trilha').value;
             p.origem = document.getElementById('origem').value;
-            p.atributos = { for: document.getElementById('for').value, agi: document.getElementById('agi').value, int: document.getElementById('int').value, vig: document.getElementById('vig').value, pre: document.getElementById('pre').value };
-            p.status = { pv: document.getElementById('res-pv').innerText, pe: document.getElementById('res-pe').innerText, san: document.getElementById('res-san').innerText };
-            p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
-            p.condicoes = Array.from(document.querySelectorAll('.chk-cond:checked')).map(x => x.dataset.nome);
+            p.foto = document.getElementById('img-retrato').src; // Garante o salvamento da foto
+            p.atributos = { 
+                for: document.getElementById('for').value, 
+                agi: document.getElementById('agi').value, 
+                int: document.getElementById('int').value, 
+                vig: document.getElementById('vig').value, 
+                pre: document.getElementById('pre').value 
+        };
+            p.status = { 
+                pv: document.getElementById('res-pv').innerText, 
+                pe: document.getElementById('res-pe').innerText, 
+                san: document.getElementById('res-san').innerText 
+        };
             p.rituais = document.getElementById('txt-rituais').value;
             p.anotacoes = document.getElementById('txt-anotacoes').value;
-            p.armas = Array.from(document.querySelectorAll('.arma-row')).map(r => ({n: r.querySelectorAll('input')[0].value, t: r.querySelectorAll('input')[1].value}));
-            p.itens = Array.from(document.querySelectorAll('.item-row')).map(r => ({n: r.querySelector('input').value, w: r.querySelector('.item-w').value}));
-            localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
-            renderAbas();
-        }
+            p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
+            p.condicoes = Array.from(document.querySelectorAll('.chk-cond:checked')).map(x => x.dataset.nome);
+
+             localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
+}
+
 
         function carregarAgente(idx) {
-            indexAtual = idx; const p = personagens[idx];
-            document.getElementById('nome-agente').value = p.nome || "";
-            document.getElementById('nex').value = p.nex || 5;
-            document.getElementById('classe').value = p.classe || "combatente";
-            document.getElementById('origem').value = p.origem || "";
-            document.getElementById('for').value = p.atributos?.for || 1;
-            document.getElementById('agi').value = p.atributos?.agi || 1;
-            document.getElementById('int').value = p.atributos?.int || 1;
-            document.getElementById('vig').value = p.atributos?.vig || 1;
-            document.getElementById('pre').value = p.atributos?.pre || 1;
-            document.getElementById('txt-rituais').value = p.rituais || "";
-            document.getElementById('txt-anotacoes').value = p.anotacoes || "";
-            document.getElementById('armas-container').innerHTML = ""; (p.armas || []).forEach(a => addArma(a.n, a.t));
-            document.getElementById('itens-container').innerHTML = ""; (p.itens || []).forEach(i => addItem(i.n, i.w));
-            document.querySelectorAll('.chk-per').forEach(x => x.checked = p.pericias?.includes(x.dataset.nome));
-            document.querySelectorAll('.chk-cond').forEach(x => x.checked = p.condicoes?.includes(x.dataset.nome));
-            atualizarOrigem(); 
-            atualizarTudo();
-            if(p.status) { 
-                document.getElementById('res-pv').innerText = p.status.pv; 
-                document.getElementById('res-pe').innerText = p.status.pe; 
-                document.getElementById('res-san').innerText = p.status.san; 
-            }
-            atualizarBarras();
-            atualizarOrigem();
-        }
+    indexAtual = idx; const p = personagens[idx];
+    if(!p) return;
 
-        function novoAgente() {
-            personagens.push({ 
-                nome: "Novo Agente", nex: 5, classe: "combatente", 
-                atributos: {for:1,agi:1,int:1,vig:1,pre:1}, 
-                armas: [], itens: [], pericias:[], condicoes:[] 
-            });
-            carregarAgente(personagens.length - 1);
-        }
+    // Carrega a foto salva ou a padrão
+    document.getElementById('img-retrato').src = p.foto || "https://i.imgur.com";
+
+    document.getElementById('nome-agente').value = p.nome || "";
+    document.getElementById('nex').value = p.nex || 5;
+    document.getElementById('classe').value = p.classe || "combatente";
+    document.getElementById('origem').value = p.origem || "";
+    document.getElementById('for').value = p.atributos?.for || 1;
+    document.getElementById('agi').value = p.atributos?.agi || 1;
+    document.getElementById('int').value = p.atributos?.int || 1;
+    document.getElementById('vig').value = p.atributos?.vig || 1;
+    document.getElementById('pre').value = p.atributos?.pre || 1;
+    document.getElementById('txt-rituais').value = p.rituais || "";
+    document.getElementById('txt-anotacoes').value = p.anotacoes || "";
+    
+    document.getElementById('armas-container').innerHTML = ""; 
+    (p.armas || []).forEach(a => addArma(a.n, a.t));
+    document.getElementById('itens-container').innerHTML = ""; 
+    (p.itens || []).forEach(i => addItem(i.n, i.w));
+    
+    document.querySelectorAll('.chk-per').forEach(x => x.checked = p.pericias?.includes(x.dataset.nome));
+    document.querySelectorAll('.chk-cond').forEach(x => x.checked = p.condicoes?.includes(x.dataset.nome));
+    
+    if(p.status) { 
+        document.getElementById('res-pv').innerText = p.status.pv; 
+        document.getElementById('res-pe').innerText = p.status.pe; 
+        document.getElementById('res-san').innerText = p.status.san; 
+    }
+    
+    renderAbas();
+    atualizarTudo();
+}
+
+function novoAgente() {
+    personagens.push({ 
+        nome: "Novo Agente", nex: 5, classe: "combatente", 
+        foto: "https://i.imgur.com",
+        atributos: {for:1,agi:1,int:1,vig:1,pre:1}, 
+        armas: [], itens: [], pericias:[], condicoes:[] 
+    });
+    carregarAgente(personagens.length - 1);
+}
 
         function renderAbas() {
             document.getElementById('lista-personagens').innerHTML = personagens.map((p, i) => 
@@ -994,7 +1128,42 @@
             atualizarBarras();
         }
 
-        function mudarFoto() { const url = prompt("URL da foto:"); if(url) document.getElementById('img-retrato').src = url; salvarDados(); }
+        function mudarFoto() {
+    document.getElementById('input-arquivo').click();
+}
+
+function processarUpload(input) {
+    if (input.files && input.files[0]) {
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+            const fotoBase64 = e.target.result;
+            document.getElementById('img-retrato').src = fotoBase64;
+            if (personagens[indexAtual]) {
+                personagens[indexAtual].foto = fotoBase64;
+                localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
+            }
+        };
+        leitor.readAsDataURL(input.files[0]);
+    }
+}
+
+function processarUpload(input) {
+    if (input.files && input.files[0]) {
+        const leitor = new FileReader();
+        leitor.onload = function(e) {
+            const fotoBase64 = e.target.result;
+            // 1. Mostra na tela
+            document.getElementById('img-retrato').src = fotoBase64;
+            // 2. Salva no personagem atual para não sumir no F5
+            if (personagens[indexAtual]) {
+                personagens[indexAtual].foto = fotoBase64;
+                localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
+            }
+        };
+        leitor.readAsDataURL(input.files[0]);
+    }
+}
+
         function deletarAtual() { if(confirm("Deletar ficha?")) { personagens.splice(indexAtual, 1); if(personagens.length === 0) novoAgente(); else carregarAgente(0); } }
         function atualizarOrigem() {
             const orgKey = document.getElementById('origem').value;
@@ -1027,6 +1196,17 @@
     salvarDados();
 }
 
+function exportarPDF() {
+    // 1. Tira o brilho de glitch e animações que podem bugar o PDF
+    const abas = document.querySelectorAll('.btn-personagem');
+    abas.forEach(a => a.classList.remove('aba-glitch'));
+
+    // 2. Comando nativo do navegador para imprimir
+    // Dica: Na janela que abrir, escolha "Salvar como PDF" no destino da impressora
+    window.print();
+}
+
     </script>
+    <input type="file" id="input-arquivo" style="display:none" accept="image/*" onchange="processarUpload(this)">
 </body>
 </html>
