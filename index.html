@@ -2,18 +2,35 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.I.G.O. - Sistema de Gestão da Ordem</title>
     <style>
         @import url('https://fonts.googleapis.com');
         :root { --sangue: #8b0000; --fundo: #0a0a0a; --texto: #d1d1d1; --borda: #333; --ouro: #ffd700; --oculto: #4b0082; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: var(--fundo); color: var(--texto); font-family: 'Special Elite', monospace; padding-bottom: 50px; }
+        body { background-color: var(--fundo); color: var(--texto); font-family: 'Special Elite', monospace; padding-bottom: 50px; overflow-x: hidden; }
         
-        #tela-login { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); }
-        #dashboard { display: none; padding: 20px; }
+        #tela-login { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); padding: 20px; }
+        #dashboard { display: none; padding: 10px; }
         
-        .container-ficha { max-width: 1050px; margin: 0 auto; background: #121212; border: 1px solid var(--sangue); padding: 30px; box-shadow: 0 0 50px #000; display: grid; grid-template-columns: 1fr 380px; gap: 25px; }
+        /* GRID RESPONSIVO */
+        .container-ficha { 
+            max-width: 1050px; margin: 0 auto; background: #121212; border: 1px solid var(--sangue); 
+            padding: 25px; box-shadow: 0 0 50px #000; display: grid; 
+            grid-template-columns: 1fr 380px; gap: 25px; 
+        }
+
+        /* AJUSTES PARA CELULAR */
+        @media (max-width: 900px) {
+            .container-ficha { grid-template-columns: 1fr; padding: 15px; }
+            .header-agente { flex-direction: column; align-items: center !important; text-align: center; }
+            .retrato-container { width: 140px; height: 140px; margin-bottom: 15px; }
+            .grid-atributos { grid-template-columns: repeat(3, 1fr) !important; gap: 5px !important; }
+            .grid-pericia { grid-template-columns: 1fr 1fr !important; }
+            #tela-login div { width: 100% !important; max-width: 350px; }
+            .defesa-box { grid-template-columns: 1fr; }
+        }
 
         .secao { border: 1px solid var(--borda); padding: 15px; margin-top: 20px; background: #0d0d0d; }
         h3 { color: var(--sangue); border-bottom: 1px solid var(--borda); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
@@ -21,7 +38,6 @@
         label { display: block; font-size: 0.65rem; color: var(--sangue); margin-bottom: 3px; text-transform: uppercase; }
         input, select, textarea { width: 100%; background: #000; border: 1px solid var(--borda); color: #fff; padding: 8px; font-family: inherit; margin-bottom: 10px; }
         
-        /* HEADER COM FOTO */
         .header-agente { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 10px; }
         .retrato-container { 
             width: 120px; height: 120px; border: 2px solid var(--sangue); 
@@ -29,9 +45,8 @@
             flex-shrink: 0; cursor: pointer; transition: 0.3s;
             box-shadow: 0 0 15px rgba(139, 0, 0, 0.3);
         }
-        .retrato-container:hover { border-color: var(--ouro); }
         .retrato-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .info-basica { flex-grow: 1; }
+        .info-basica { flex-grow: 1; width: 100%; }
 
         .info-origem { font-size: 0.7rem; color: var(--ouro); margin-bottom: 15px; font-style: italic; border-left: 2px solid var(--sangue); padding-left: 10px; min-height: 18px;}
 
@@ -91,7 +106,7 @@
             
             <div class="coluna-principal">
                 <div class="header-agente">
-                    <div class="retrato-container" onclick="mudarFoto()" title="Clique para mudar a foto">
+                    <div class="retrato-container" onclick="mudarFoto()">
                         <img id="img-retrato" src="https://i.imgur.com" class="retrato-img">
                     </div>
                     <div class="info-basica">
@@ -109,7 +124,17 @@
                 <label>Origem</label>
                 <select id="origem" onchange="atualizarOrigem()">
                     <option value="">Selecione...</option>
-                    <option value="academico">Acadêmico</option><option value="agente-saude">Agente de Saúde</option><option value="amnesico">Amnésico</option><option value="artista">Artista</option><option value="atleta">Atleta</option><option value="chef">Chef</option><option value="criminoso">Criminoso</option><option value="cultista-arrependido">Cultista Arrependido</option><option value="desgarrado">Desgarrado</option><option value="executivo">Executivo</option><option value="investigador">Investigador</option><option value="lutador">Lutador</option><option value="magnata">Magnata</option><option value="mercenario">Mercenário</option><option value="militar">Militar</option><option value="operario">Operário</option><option value="policial">Policial</option><option value="religioso">Religioso</option><option value="servidor-publico">Servidor Público</option><option value="teorico-conspiracao">Teórico da Conspiração</option><option value="ti-agente">T.I.</option><option value="vitima">Vítima</option>
+                    <option value="academico">Acadêmico</option><option value="agente-saude">Agente de Saúde</option>
+                    <option value="amnesico">Amnésico</option><option value="artista">Artista</option>
+                    <option value="atleta">Atleta</option><option value="chef">Chef</option>
+                    <option value="criminoso">Criminoso</option><option value="cultista-arrependido">Cultista Arrependido</option>
+                    <option value="desgarrado">Desgarrado</option><option value="executivo">Executivo</option>
+                    <option value="investigador">Investigador</option><option value="lutador">Lutador</option>
+                    <option value="magnata">Magnata</option><option value="mercenario">Mercenário</option>
+                    <option value="militar">Militar</option><option value="operario">Operário</option>
+                    <option value="policial">Policial</option><option value="religioso">Religioso</option>
+                    <option value="servidor-publico">Servidor Público</option><option value="teorico-conspiracao">Teórico da Conspiração</option>
+                    <option value="ti-agente">T.I.</option><option value="vitima">Vítima</option>
                 </select>
                 <div id="desc-origem" class="info-origem">Escolha uma origem.</div>
 
@@ -177,7 +202,6 @@
                     </div>
                 </div>
 
-                <!-- SEÇÃO DE RITUAIS AGORA SEMPRE VISÍVEL -->
                 <div id="secao-rituais" class="secao" style="border-color: var(--oculto);">
                     <h3 style="color: #9932cc; border-color: var(--oculto);">Rituais (<span id="circulo-max">1º</span> Círculo)</h3>
                     <textarea id="txt-rituais" style="height: 100px; background: #05000a; color: #e0b0ff;" oninput="salvarDados()"></textarea>
@@ -248,8 +272,6 @@
             document.getElementById('defesa-val').innerText = 10 + a + b;
             const ref = Array.from(document.querySelectorAll('.chk-per:checked')).some(x => x.dataset.nome === "Reflexos") ? 5 : 0;
             document.getElementById('esquiva-val').innerText = 10 + a + b + ref;
-
-            // Título do Círculo máximo (dinâmico)
             document.getElementById('circulo-max').innerText = n>=85?"4º":n>=65?"3º":n>=35?"2º":"1º";
 
             const av = Math.floor((n - 5) / 5);

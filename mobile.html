@@ -29,44 +29,34 @@
             transition: filter 0.3s ease, background-color 0.3s ease;
         }
 
-        /* --- SISTEMA DE GLITCH E TRAUMA --- */
-        
-        /* Sanidade Baixa (Efeito Roxo/Glitch) */
-        .sanidade-baixa { animation: glitch-san 0.3s infinite; filter: sepia(0.5) hue-rotate(260deg) contrast(1.2); }
-        .sanidade-critica { animation: glitch-san 0.1s infinite; filter: invert(1) contrast(2); }
+        /* --- SISTEMA DE TRAUMA E GLITCH --- */
+        .vida-baixa { animation: tremor-v 0.4s infinite; background-color: #1a0000 !important; }
+        .vida-critica { animation: tremor-v 0.1s infinite; background-color: #330000 !important; filter: brightness(0.7) sepia(1) saturate(5); }
+        .sanidade-baixa { animation: glitch-s 0.3s infinite; filter: hue-rotate(260deg) contrast(1.2); }
+        .sanidade-critica { animation: glitch-s 0.1s infinite; filter: invert(1) contrast(2); }
 
-        /* Vida Baixa (Efeito Vermelho/Trauma) */
-        .vida-baixa { animation: tremor-vida 0.4s infinite; background-color: #1a0000 !important; filter: saturate(1.5) contrast(1.1); }
-        .vida-critica { animation: tremor-vida 0.1s infinite; background-color: #330000 !important; filter: brightness(0.6) sepia(1) hue-rotate(-50deg) saturate(5); }
-
-        @keyframes glitch-san {
-            0% { transform: translate(0); }
-            25% { transform: translate(-2px, 1px); }
-            50% { transform: translate(2px, -1px); }
-            75% { transform: translate(-1px, -2px); }
-            100% { transform: translate(1px, 2px); }
+        @keyframes pulse-falha {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--sangue-vibrante); }
+            50% { opacity: 0.3; box-shadow: 0 0 20px var(--sangue-vibrante), 2px 2px 10px red; }
         }
+        .barra-falhando { animation: pulse-falha 0.2s infinite !important; }
 
-        @keyframes tremor-vida {
-            0% { transform: translate(1px, 1px); box-shadow: inset 0 0 50px rgba(255,0,0,0.2); }
-            50% { transform: translate(-1px, -1px); box-shadow: inset 0 0 100px rgba(255,0,0,0.4); }
-            100% { transform: translate(1px, -1px); box-shadow: inset 0 0 50px rgba(255,0,0,0.2); }
-        }
+        @keyframes tremor-v { 0%, 100% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } }
+        @keyframes glitch-s { 0% { transform: translate(0); } 50% { transform: translate(-3px, 2px); } 100% { transform: translate(3px, -2px); } }
 
-        /* --- TELA DE LOGIN --- */
+        /* --- LOGIN (IDÊNTICO À IMAGEM) --- */
         #tela-login { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); }
         .box-login { background: #080808; padding: 50px 30px; border: 1px solid #1a1a1a; border-top: 2px solid var(--sangue-vibrante); text-align: center; width: 90%; max-width: 420px; }
-        .box-login h2 { color: var(--sangue-vibrante); font-size: 1.6rem; letter-spacing: 6px; margin-bottom: 5px; }
-        .box-login input { background: #000 !important; border: 1px solid #222 !important; color: #666 !important; padding: 14px !important; margin-bottom: 15px; border-radius: 0; width: 100%; }
-        .box-login button { background: transparent !important; border: 1px solid #440000 !important; color: #440000 !important; padding: 12px !important; width: 100%; font-size: 0.65rem !important; letter-spacing: 3px; transition: 0.3s; }
-        .box-login button:hover { color: var(--sangue-vibrante) !important; border-color: var(--sangue-vibrante) !important; }
+        .box-login h2 { color: var(--sangue-vibrante); font-size: 1.6rem; letter-spacing: 6px; margin-bottom: 5px; min-height: 1.6rem; }
+        .box-login input { background: #000 !important; border: 1px solid #222 !important; color: #666 !important; padding: 14px !important; margin-bottom: 15px; width: 100%; border-radius: 0; }
+        .box-login button { background: transparent !important; border: 1px solid #440000 !important; color: #440000 !important; padding: 12px !important; width: 100%; font-size: 0.65rem !important; letter-spacing: 3px; }
 
-        /* --- COMPONENTES DA FICHA --- */
-        button { cursor: pointer; font-family: 'Special Elite', monospace; text-transform: uppercase; transition: all 0.2s ease; }
+        /* --- BOTÕES E INTERFACE --- */
+        button { cursor: pointer; font-family: 'Special Elite', monospace; text-transform: uppercase; transition: 0.2s; }
         .container-ficha { width: 100%; max-width: 500px; margin: 0 auto; background: #000; border: 1px solid var(--sangue); padding: 15px; box-shadow: 0 0 30px #000; }
         .secao { border: 1px solid var(--borda); padding: 12px; margin-top: 15px; background: #000; border-radius: 4px; }
         h3 { color: var(--sangue); font-size: 0.85rem; border-bottom: 1px solid var(--borda); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        label { font-size: 0.6rem; color: var(--sangue); display: block; margin-bottom: 2px; text-transform: uppercase; }
+        label { font-size: 0.6rem; color: var(--sangue); display: block; text-transform: uppercase; }
         input, select, textarea { width: 100%; background: #000; border: 1px solid #222; color: #fff; padding: 10px; font-family: inherit; margin-bottom: 8px; border-radius: 4px; }
         
         .btn-status-mob { width: 34px; height: 34px; margin-left: 5px; font-size: 1.2rem; border: 1px solid var(--sangue); background: rgba(139, 0, 0, 0.1); color: var(--sangue); }
@@ -74,20 +64,17 @@
         
         .btn-descanso { width: 100%; padding: 15px; margin-bottom: 10px; background: #0a0a0a; border: 1px solid #333; color: #666; letter-spacing: 2px; font-weight: bold; }
         .btn-descanso.longo { border-color: var(--ouro); color: var(--ouro); }
-        .btn-descanso:active { filter: brightness(1.5); transform: translateY(2px); }
-
-        .btn-personagem { background: #000; color: #444; border: 1px solid #222; padding: 8px 12px; white-space: nowrap; font-size: 0.65rem; }
-        .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); border-bottom-width: 3px; }
         
         .status-box { background: #000; padding: 12px; border: 1px dashed var(--sangue); margin: 15px 0; }
-        .barra-fundo { background: #111; height: 8px; width: 100%; margin: 4px 0 10px 0; border-radius: 4px; overflow: hidden; }
-        .barra-progresso { height: 100%; transition: 0.3s; }
+        .barra-fundo { background: #111; height: 8px; width: 100%; margin: 4px 0 10px 0; border-radius: 4px; overflow: hidden; position: relative; }
+        .barra-progresso { height: 100%; transition: 0.3s; width: 0%; }
         .atrib-val { font-size: 1.4rem; border: none; border-bottom: 2px solid var(--sangue); text-align: center; background: transparent; width: 100%; color: white; }
         .caixa-resultado { border: 1px solid #333; background: #000; height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         .val-resultado { font-size: 3.5rem; color: var(--ouro); font-weight: bold; }
         
-        .btn-deletar-agente { background: transparent !important; border: 1px solid #1a1a1a !important; color: #333 !important; padding: 15px; width: 100%; margin-top: 40px; font-size: 0.55rem; opacity: 0.6; }
-        .btn-deletar-agente:hover { opacity: 1; color: var(--sangue-vibrante) !important; border-color: var(--sangue-vibrante) !important; animation: tremor-vida 0.1s infinite; }
+        .btn-personagem { background: #000; color: #444; border: 1px solid #222; padding: 8px 12px; white-space: nowrap; font-size: 0.65rem; }
+        .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); border-bottom-width: 3px; }
+        .arma-row, .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 30px; gap: 5px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -112,7 +99,7 @@
                 <div style="flex-grow: 1;">
                     <label>Agente</label><input type="text" id="nome-agente" oninput="salvarDados()">
                     <div style="display: flex; gap: 5px;">
-                        <div style="flex:1"><label>NEX</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
+                        <div style="flex:1"><label>NEX %</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
                         <div style="flex:2"><label>Classe</label>
                             <select id="classe" onchange="atualizarTudo()">
                                 <option value="combatente">Combatente</option><option value="especialista">Especialista</option><option value="ocultista">Ocultista</option>
@@ -121,6 +108,15 @@
                     </div>
                 </div>
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><label>Trilha</label><select id="trilha" onchange="salvarDados()"></select></div>
+                <div><label>Origem</label><select id="origem" onchange="atualizarOrigem()">
+                    <option value="">Selecione...</option>
+                    <option value="academico">Acadêmico</option><option value="agente-saude">Agente de Saúde</option><option value="amnesico">Amnésico</option><option value="artista">Artista</option><option value="atleta">Atleta</option><option value="chef">Chef</option><option value="criminoso">Criminoso</option><option value="cultista-arrependido">Arrependido</option><option value="desgarrado">Desgarrado</option><option value="executivo">Executivo</option><option value="investigador">Investigador</option><option value="lutador">Lutador</option><option value="magnata">Magnata</option><option value="militar">Militar</option><option value="operario">Operário</option><option value="policial">Policial</option><option value="religioso">Religioso</option><option value="servidor-publico">Servidor</option><option value="teorico-conspiracao">Teórico</option><option value="ti-agente">T.I.</option><option value="vitima">Vítima</option>
+                </select></div>
+            </div>
+            <div id="desc-origem" style="font-size: 0.55rem; color: var(--ouro); margin: 5px 0; min-height: 12px;"></div>
 
             <div class="status-box">
                 <div style="display:flex; justify-content:space-between; align-items:center;"><b>PV</b> <div><span id="res-pv">0</span>/<span id="max-pv">0</span> <button class="btn-status-mob" onclick="altStatus('pv',-1)">-</button><button class="btn-status-mob" onclick="altStatus('pv',1)">+</button></div></div>
@@ -131,15 +127,13 @@
                 <div class="barra-fundo"><div id="bar-pe" class="barra-progresso" style="background:var(--ouro)"></div></div>
             </div>
 
-            <div class="secao">
-                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;">
-                    <div class="atrib-box" onclick="rolarTeste('FOR')"><label>FOR</label><input type="number" id="for" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('AGI')"><label>AGI</label><input type="number" id="agi" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('INT')"><label>INT</label><input type="number" id="int" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('VIG')"><label>VIG</label><input type="number" id="vig" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('PRE')"><label>PRE</label><input type="number" id="pre" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                </div>
-            </div>
+            <div class="secao"><div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;">
+                <div class="atrib-box" onclick="rolarTeste('FOR')"><label>FOR</label><input type="number" id="for" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                <div class="atrib-box" onclick="rolarTeste('AGI')"><label>AGI</label><input type="number" id="agi" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                <div class="atrib-box" onclick="rolarTeste('INT')"><label>INT</label><input type="number" id="int" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                <div class="atrib-box" onclick="rolarTeste('VIG')"><label>VIG</label><input type="number" id="vig" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                <div class="atrib-box" onclick="rolarTeste('PRE')"><label>PRE</label><input type="number" id="pre" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+            </div></div>
 
             <div class="secao">
                 <button class="btn-descanso longo" onclick="descanso('longo')">Descanso Longo</button>
@@ -152,17 +146,11 @@
                 </div>
             </div>
 
-            <div class="secao">
-                <h3>Armas <button onclick="addArma()" style="width:25px; height:25px; background:var(--sangue); border:none; color:white;">+</button></h3>
-                <div id="armas-container"></div>
-            </div>
-
-            <div class="secao">
-                <h3>Perícias (<span id="count-per">0</span>)</h3>
-                <div id="lista-pericias" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div>
-            </div>
-
-            <button class="btn-deletar-agente" onclick="deletarAgente()">Deletar Agente Permanentemente</button>
+            <div class="secao"><h3>Armas <button onclick="addArma()">+</button></h3><div id="armas-container"></div></div>
+            <div class="secao"><h3>Inventário (<span id="carga-at">0</span>/<span id="carga-max">0</span>) <button onclick="addItem()">+</button></h3><div id="itens-container"></div></div>
+            <div class="secao"><h3>Perícias (<span id="count-per">0</span>)</h3><div id="lista-pericias" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div></div>
+            <div class="secao"><h3>Rituais (Círculo: <b id="circ-max">1º</b>)</h3><textarea id="rituais" rows="4" oninput="salvarDados()"></textarea></div>
+            <button onclick="deletarAgente()" style="background:transparent; border:none; color:#222; width:100%; margin-top:40px; font-size:0.55rem;">DELETAR AGENTE PERMANENTEMENTE</button>
         </div>
     </section>
 
@@ -177,6 +165,9 @@
         const sfx = { click: () => playSound(800, 'square', 0.05, 0.02), roll: () => { playSound(400, 'sawtooth', 0.2); setTimeout(()=>playSound(600,'sawtooth',0.1),100); }, warn: () => playSound(150, 'sine', 0.5, 0.2) };
 
         const PERI = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Ciências", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
+        const TRILHAS = { combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"], especialista: ["Atirador Elite", "Infiltrador", "Médico Campo", "Negociador", "Técnico"], ocultista: ["Conduíte", "Flagelador", "Graduado", "Lâmina", "Intuitivo"] };
+        const ORIGENS = { academico: "Investigação e Saber.", "agente-saude": "Medicina.", amnesico: "Duas perícias.", artista: "Artes e Diplomacia.", atleta: "Atletismo e Acrobacia.", chef: "Descanso.", criminoso: "Crime e Furtividade.", "cultista-arrependido": "Ocultismo e Vontade.", desgarrado: "Fortitude.", executivo: "Diplomacia.", investigador: "Investigação.", lutador: "Luta.", magnata: "Diplomacia.", militar: "Pontaria.", operario: "Fortitude.", policial: "Defesa+1.", religioso: "Vontade.", "servidor-publico": "Vontade.", "teorico-conspiracao": "Ocultismo.", "ti-agente": "Tecnologia.", vitima: "Vontade." };
+
         let personagens = JSON.parse(localStorage.getItem('sigo_v3_pro')) || [];
         let indexAt = 0;
 
@@ -198,15 +189,26 @@
             const c = document.getElementById('classe').value;
             const v = parseInt(document.getElementById('vig').value) || 0;
             const i = parseInt(document.getElementById('int').value) || 0;
+            const f = parseInt(document.getElementById('for').value) || 0;
             const av = Math.floor((n - 5) / 5);
             let pB, pN, eB, eN, sB, sN;
+            
+            const selT = document.getElementById('trilha'); selT.disabled = n < 10;
+            selT.innerHTML = n < 10 ? "<option>Bloqueado</option>" : TRILHAS[c].map(t => `<option value="${t}" ${t===personagens[indexAt].trilha?'selected':''}>${t}</option>`).join('');
+
             if (c === 'combatente') { pB=20+v; pN=4+v; eB=2+i; eN=2+i; sB=12; sN=3; }
             else if (c === 'especialista') { pB=16+v; pN=3+v; eB=3+i; eN=3+i; sB=16; sN=4; }
             else { pB=12+v; pN=2+v; eB=4+i; eN=4+i; sB=20; sN=5; }
+
             document.getElementById('max-pv').innerText = pB + (pN * av);
             document.getElementById('max-pe').innerText = eB + (eN * av);
             document.getElementById('max-san').innerText = sB + (sN * av);
+            document.getElementById('circ-max').innerText = n>=85?"4º":n>=65?"3º":n>=35?"2º":"1º";
+            document.getElementById('carga-max').innerText = 5 + (f * 5);
             document.getElementById('count-per').innerText = (c === 'especialista' ? 7 : 3) + i;
+
+            let peso = 0; document.querySelectorAll('.it-w').forEach(inp => peso += parseInt(inp.value) || 0);
+            document.getElementById('carga-at').innerText = peso;
             atualizarBarras(); salvarDados();
         }
 
@@ -214,19 +216,19 @@
             sfx.click(); const s = document.getElementById(`res-${t}`); const m = parseInt(document.getElementById(`max-${t}`).innerText);
             let val = Math.max(0, Math.min(m, (parseInt(s.innerText) || 0) + v)); s.innerText = val;
             
-            // LÓGICA DE TRAUMA E GLITCH
-            document.body.classList.remove('sanidade-baixa', 'sanidade-critica', 'vida-baixa', 'vida-critica');
-            
+            const body = document.body;
+            body.classList.remove('sanidade-baixa', 'sanidade-critica', 'vida-baixa', 'vida-critica');
+            document.getElementById('bar-pv').classList.remove('barra-falhando');
+
             const pvAt = parseInt(document.getElementById('res-pv').innerText);
             const pvMx = parseInt(document.getElementById('max-pv').innerText);
             const snAt = parseInt(document.getElementById('res-san').innerText);
             const snMx = parseInt(document.getElementById('max-san').innerText);
 
-            if(pvAt <= 0) { document.body.classList.add('vida-critica'); sfx.warn(); }
-            else if(pvAt <= (pvMx * 0.25)) document.body.classList.add('vida-baixa');
-
-            if(snAt <= 0) { document.body.classList.add('sanidade-critica'); sfx.warn(); }
-            else if(snAt <= (snMx * 0.25)) document.body.classList.add('sanidade-baixa');
+            if(pvAt <= 0) { body.classList.add('vida-critica'); sfx.warn(); }
+            else if(pvAt <= (pvMx * 0.25)) { body.classList.add('vida-baixa'); document.getElementById('bar-pv').classList.add('barra-falhando'); }
+            if(snAt <= 0) { body.classList.add('sanidade-critica'); sfx.warn(); }
+            else if(snAt <= (snMx * 0.25)) body.classList.add('sanidade-baixa');
 
             atualizarBarras(); salvarDados();
         }
@@ -243,9 +245,15 @@
         function rolarTeste(a) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*20)+1; }
 
         function addArma(n="", d="DANO") {
-            const div = document.createElement('div'); div.className = "arma-row"; div.style = "display:grid; grid-template-columns:2fr 1fr 30px; gap:5px; margin-bottom:5px;";
+            const div = document.createElement('div'); div.className = "arma-row";
             div.innerHTML = `<input type="text" placeholder="Arma" value="${n}" oninput="salvarDados()"><button style="background:var(--sangue); border:none; color:white; font-size:0.6rem;" onclick="rolarD(20)">${d}</button><button onclick="this.parentElement.remove(); salvarDados()" style="border:none; background:transparent; color:#444;">X</button>`;
             document.getElementById('armas-container').appendChild(div);
+        }
+
+        function addItem(n="", w=1) {
+            const div = document.createElement('div'); div.className = "item-row";
+            div.innerHTML = `<input type="text" placeholder="Item" value="${n}" oninput="salvarDados()"><input type="number" class="it-w" value="${w}" onchange="atualizarTudo()"><span style="width:30px"></span><button onclick="this.parentElement.remove(); atualizarTudo()" style="border:none; background:transparent; color:#444;">X</button>`;
+            document.getElementById('itens-container').appendChild(div); atualizarTudo();
         }
 
         function carregarAgente(idx) {
@@ -259,44 +267,33 @@
             document.getElementById('vig').value = p.atributos?.vig || 1;
             document.getElementById('pre').value = p.atributos?.pre || 1;
             document.getElementById('armas-container').innerHTML = ""; (p.armas || []).forEach(a => addArma(a.n, a.d));
+            document.getElementById('itens-container').innerHTML = ""; (p.itens || []).forEach(i => addItem(i.n, i.w));
+            document.getElementById('rituais').value = p.rituais || "";
             atualizarTudo();
             if(p.status) { ['pv','pe','san'].forEach(t => document.getElementById(`res-${t}`).innerText = p.status[t]); }
             document.querySelectorAll('.chk-per').forEach(x => x.checked = (p.pericias || []).includes(x.dataset.nome));
-            atualizarBarras(); renderAbas();
+            atualizarBarras(); renderAbas(); atualizarOrigem();
         }
 
         function salvarDados() {
             if(!personagens[indexAt]) return;
             const p = personagens[indexAt];
-            p.nome = document.getElementById('nome-agente').value;
-            p.nex = document.getElementById('nex').value;
-            p.classe = document.getElementById('classe').value;
+            p.nome = document.getElementById('nome-agente').value; p.nex = document.getElementById('nex').value;
+            p.classe = document.getElementById('classe').value; p.trilha = document.getElementById('trilha').value;
+            p.origem = document.getElementById('origem').value;
             p.atributos = { for: document.getElementById('for').value, agi: document.getElementById('agi').value, int: document.getElementById('int').value, vig: document.getElementById('vig').value, pre: document.getElementById('pre').value };
             p.status = { pv: document.getElementById('res-pv').innerText, pe: document.getElementById('res-pe').innerText, san: document.getElementById('res-san').innerText };
             p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
+            p.rituais = document.getElementById('rituais').value;
             p.armas = Array.from(document.querySelectorAll('.arma-row')).map(d => ({n: d.querySelector('input').value, d: d.querySelector('button').innerText}));
-            localStorage.setItem('sigo_v3_pro', JSON.stringify(personagens));
-            renderAbas();
+            p.itens = Array.from(document.querySelectorAll('.item-row')).map(d => ({n: d.querySelector('input').value, w: d.querySelector('.it-w').value}));
+            localStorage.setItem('sigo_v3_pro', JSON.stringify(personagens)); renderAbas();
         }
 
-        function novoAgente() {
-            personagens.push({ nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [], armas: [], status: null });
-            carregarAgente(personagens.length - 1);
-        }
-
-        function renderAbas() {
-            document.getElementById('lista-personagens').innerHTML = personagens.map((p, i) => `<div class="btn-personagem ${i===indexAt?'ativo':''}" onclick="carregarAgente(${i})">${p.nome || 'A'}</div>`).join('') + `<div class="btn-personagem" onclick="novoAgente()">+</div>`;
-        }
-
-        function descanso(tipo) {
-            ['pv', 'pe', 'san'].forEach(t => {
-                const m = parseInt(document.getElementById(`max-${t}`).innerText);
-                if(tipo==='longo') document.getElementById(`res-${t}`).innerText = m;
-                else if(t !== 'san') { let val = parseInt(document.getElementById(`res-${t}`).innerText); document.getElementById(`res-${t}`).innerText = Math.min(m, val + Math.floor(m/2)); }
-            });
-            altStatus('pv', 0); // Dispara a verificação de glitch
-        }
-
+        function novoAgente() { personagens.push({ nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [], armas: [], itens: [], status: null }); carregarAgente(personagens.length - 1); }
+        function renderAbas() { document.getElementById('lista-personagens').innerHTML = personagens.map((p, i) => `<div class="btn-personagem ${i===indexAt?'ativo':''}" onclick="carregarAgente(${i})">${p.nome || 'A'}</div>`).join('') + `<div class="btn-personagem" onclick="novoAgente()">+</div>`; }
+        function descanso(tipo) { ['pv', 'pe', 'san'].forEach(t => { const m = parseInt(document.getElementById(`max-${t}`).innerText); if(tipo==='longo') document.getElementById(`res-${t}`).innerText = m; else if(t !== 'san') { let v = parseInt(document.getElementById(`res-${t}`).innerText); document.getElementById(`res-${t}`).innerText = Math.min(m, v + Math.floor(m/2)); } }); altStatus('pv', 0); }
+        function atualizarOrigem() { document.getElementById('desc-origem').innerText = "Bônus: " + (ORIGENS[document.getElementById('origem').value] || "Nenhum"); salvarDados(); }
         function mudarFoto() { const url = prompt("URL da Foto:"); if(url) document.getElementById('img-retrato').src = url; }
         function deletarAgente() { if(confirm("Apagar permanentemente?")) { personagens.splice(indexAt, 1); if(personagens.length===0) novoAgente(); else carregarAgente(0); } }
     </script>
