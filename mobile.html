@@ -2,304 +2,303 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>S.I.G.O. - Mobile V1.3</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S.I.G.O. - Mobile V3.1 PRO</title>
     <style>
         @import url('https://fonts.googleapis.com');
-        :root { --sangue: #8b0000; --fundo: #0a0a0a; --texto: #d1d1d1; --borda: #333; --ouro: #ffd700; }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: var(--fundo); color: var(--texto); font-family: 'Special Elite', monospace; padding: 10px; padding-bottom: 50px; }
+        :root { 
+            --sangue: #8b0000; 
+            --sangue-vibrante: #ff0000;
+            --fundo: #050505; 
+            --texto: #d1d1d1; 
+            --borda: #1a1a1a; 
+            --ouro: #ffd700; 
+            --oculto: #4b0082; 
+        }
         
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--fundo); 
+            color: var(--texto); 
+            font-family: 'Special Elite', monospace; 
+            padding: 10px; 
+            padding-bottom: 60px; 
+            overflow-x: hidden; 
+            transition: filter 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* --- SISTEMA DE GLITCH E TRAUMA --- */
+        
+        /* Sanidade Baixa (Efeito Roxo/Glitch) */
+        .sanidade-baixa { animation: glitch-san 0.3s infinite; filter: sepia(0.5) hue-rotate(260deg) contrast(1.2); }
+        .sanidade-critica { animation: glitch-san 0.1s infinite; filter: invert(1) contrast(2); }
+
+        /* Vida Baixa (Efeito Vermelho/Trauma) */
+        .vida-baixa { animation: tremor-vida 0.4s infinite; background-color: #1a0000 !important; filter: saturate(1.5) contrast(1.1); }
+        .vida-critica { animation: tremor-vida 0.1s infinite; background-color: #330000 !important; filter: brightness(0.6) sepia(1) hue-rotate(-50deg) saturate(5); }
+
+        @keyframes glitch-san {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2px, 1px); }
+            50% { transform: translate(2px, -1px); }
+            75% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 2px); }
+        }
+
+        @keyframes tremor-vida {
+            0% { transform: translate(1px, 1px); box-shadow: inset 0 0 50px rgba(255,0,0,0.2); }
+            50% { transform: translate(-1px, -1px); box-shadow: inset 0 0 100px rgba(255,0,0,0.4); }
+            100% { transform: translate(1px, -1px); box-shadow: inset 0 0 50px rgba(255,0,0,0.2); }
+        }
+
+        /* --- TELA DE LOGIN --- */
         #tela-login { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); }
-        #dashboard { display: none; }
+        .box-login { background: #080808; padding: 50px 30px; border: 1px solid #1a1a1a; border-top: 2px solid var(--sangue-vibrante); text-align: center; width: 90%; max-width: 420px; }
+        .box-login h2 { color: var(--sangue-vibrante); font-size: 1.6rem; letter-spacing: 6px; margin-bottom: 5px; }
+        .box-login input { background: #000 !important; border: 1px solid #222 !important; color: #666 !important; padding: 14px !important; margin-bottom: 15px; border-radius: 0; width: 100%; }
+        .box-login button { background: transparent !important; border: 1px solid #440000 !important; color: #440000 !important; padding: 12px !important; width: 100%; font-size: 0.65rem !important; letter-spacing: 3px; transition: 0.3s; }
+        .box-login button:hover { color: var(--sangue-vibrante) !important; border-color: var(--sangue-vibrante) !important; }
+
+        /* --- COMPONENTES DA FICHA --- */
+        button { cursor: pointer; font-family: 'Special Elite', monospace; text-transform: uppercase; transition: all 0.2s ease; }
+        .container-ficha { width: 100%; max-width: 500px; margin: 0 auto; background: #000; border: 1px solid var(--sangue); padding: 15px; box-shadow: 0 0 30px #000; }
+        .secao { border: 1px solid var(--borda); padding: 12px; margin-top: 15px; background: #000; border-radius: 4px; }
+        h3 { color: var(--sangue); font-size: 0.85rem; border-bottom: 1px solid var(--borda); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        label { font-size: 0.6rem; color: var(--sangue); display: block; margin-bottom: 2px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; background: #000; border: 1px solid #222; color: #fff; padding: 10px; font-family: inherit; margin-bottom: 8px; border-radius: 4px; }
         
-        .container-ficha { width: 100%; background: #121212; border: 1px solid var(--sangue); padding: 15px; box-shadow: 0 0 30px #000; }
-
-        .secao { border: 1px solid var(--borda); padding: 12px; margin-top: 15px; background: #0d0d0d; border-radius: 4px; }
-        h3 { color: var(--sangue); font-size: 0.9rem; border-bottom: 1px solid var(--borda); margin-bottom: 10px; text-transform: uppercase; }
-
-        input, select, textarea { width: 100%; background: #000; border: 1px solid var(--borda); color: #fff; padding: 10px; font-family: inherit; margin-bottom: 8px; border-radius: 4px; }
+        .btn-status-mob { width: 34px; height: 34px; margin-left: 5px; font-size: 1.2rem; border: 1px solid var(--sangue); background: rgba(139, 0, 0, 0.1); color: var(--sangue); }
+        .btn-status-mob:active { transform: scale(1.3); background: var(--sangue) !important; color: white !important; }
         
-        .grid-atributos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .atrib-box { text-align: center; border: 1px solid var(--borda); padding: 8px; cursor: pointer; }
-        .atrib-val { font-size: 1.4rem; border: none; border-bottom: 2px solid var(--sangue); text-align: center; background: transparent; width: 100%; color: white; pointer-events: auto !important; }
+        .btn-descanso { width: 100%; padding: 15px; margin-bottom: 10px; background: #0a0a0a; border: 1px solid #333; color: #666; letter-spacing: 2px; font-weight: bold; }
+        .btn-descanso.longo { border-color: var(--ouro); color: var(--ouro); }
+        .btn-descanso:active { filter: brightness(1.5); transform: translateY(2px); }
 
-        .status-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; background: #000; padding: 12px; border: 1px dashed var(--sangue); margin: 10px 0; }
-        .status-item { text-align: center; }
-        .status-item label { font-size: 0.6rem; display: block; }
-        .status-item span { font-size: 1.4rem; color: var(--sangue); font-weight: bold; display: block; }
-        .status-item small { font-size: 0.5rem; color: #666; display: block; }
-
-        .btn-status-mob { background: transparent; border: 1px solid var(--sangue); color: var(--sangue); padding: 8px 0; width: 45%; font-weight: bold; margin-top: 5px; font-size: 0.8rem; }
-
-        #lista-personagens { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--sangue); }
-        .btn-personagem { background: #1a1a1a; color: #666; border: 1px solid #333; padding: 6px 12px; cursor: pointer; white-space: nowrap; font-size: 0.8rem; }
-        .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); }
-
-        button { background: transparent; border: 1px solid var(--sangue); color: var(--sangue); padding: 12px; font-family: inherit; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 5px; }
+        .btn-personagem { background: #000; color: #444; border: 1px solid #222; padding: 8px 12px; white-space: nowrap; font-size: 0.65rem; }
+        .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); border-bottom-width: 3px; }
+        
+        .status-box { background: #000; padding: 12px; border: 1px dashed var(--sangue); margin: 15px 0; }
+        .barra-fundo { background: #111; height: 8px; width: 100%; margin: 4px 0 10px 0; border-radius: 4px; overflow: hidden; }
+        .barra-progresso { height: 100%; transition: 0.3s; }
+        .atrib-val { font-size: 1.4rem; border: none; border-bottom: 2px solid var(--sangue); text-align: center; background: transparent; width: 100%; color: white; }
+        .caixa-resultado { border: 1px solid #333; background: #000; height: 110px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .val-resultado { font-size: 3.5rem; color: var(--ouro); font-weight: bold; }
+        
+        .btn-deletar-agente { background: transparent !important; border: 1px solid #1a1a1a !important; color: #333 !important; padding: 15px; width: 100%; margin-top: 40px; font-size: 0.55rem; opacity: 0.6; }
+        .btn-deletar-agente:hover { opacity: 1; color: var(--sangue-vibrante) !important; border-color: var(--sangue-vibrante) !important; animation: tremor-vida 0.1s infinite; }
     </style>
 </head>
 <body>
 
     <section id="tela-login">
-        <div style="background: #121212; padding: 30px; border: 1px solid var(--borda); border-top: 4px solid var(--sangue); text-align: center; width: 90%; max-width: 350px;">
-            <h2 style="color: var(--sangue);">ORDO REALITAS</h2>
-            <p style="font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 20px;">TERMINAL MOBILE V1.3</p>
-            <input type="text" id="user" placeholder="NOME DO AGENTE">
-            <button onclick="fazerLogin()">Acessar</button>
+        <div class="box-login">
+            <h2 id="typing-title"></h2>
+            <p style="color:#444; font-size:0.55rem; letter-spacing:3px; margin-bottom:35px;">SISTEMA DE GESTÃO V3.1 PRO</p>
+            <input type="text" id="user" placeholder="NOME DE AGENTE" autocomplete="off">
+            <button onclick="fazerLogin()">ACESSAR TERMINAL</button>
         </div>
     </section>
 
-    <section id="dashboard">
+    <section id="dashboard" style="display:none;">
         <div class="container-ficha">
-            <div id="lista-personagens"></div>
+            <div id="lista-personagens" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--sangue);"></div>
             
-            <label>AGENTE</label>
-            <input type="text" id="nome-agente" oninput="salvarDados()">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>NEX %</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
-                <div><label>CLASSE</label>
-                    <select id="classe" onchange="atualizarTudo()">
-                        <option value="combatente">Combatente</option>
-                        <option value="especialista">Especialista</option>
-                        <option value="ocultista">Ocultista</option>
-                    </select>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+                <div onclick="mudarFoto()" style="width: 80px; height: 80px; border: 2px solid var(--sangue); border-radius: 50%; overflow: hidden; background: #000; flex-shrink: 0; cursor: pointer;">
+                    <img id="img-retrato" src="https://i.imgur.com" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
-            </div>
-
-            <!-- CAMPO DE TRILHA ADICIONADO -->
-            <div style="margin-top: 5px;"><label>TRILHA</label><select id="trilha" onchange="salvarDados()"></select></div>
-
-            <div class="secao">
-                <div class="grid-atributos">
-                    <div class="atrib-box" onclick="rolarTeste('FOR')"><label>FOR</label><input type="number" class="atrib-val" id="for" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('AGI')"><label>AGI</label><input type="number" class="atrib-val" id="agi" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('INT')"><label>INT</label><input type="number" class="atrib-val" id="int" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('VIG')"><label>VIG</label><input type="number" class="atrib-val" id="vig" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
-                    <div class="atrib-box" onclick="rolarTeste('PRE')"><label>PRE</label><input type="number" class="atrib-val" id="pre" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                <div style="flex-grow: 1;">
+                    <label>Agente</label><input type="text" id="nome-agente" oninput="salvarDados()">
+                    <div style="display: flex; gap: 5px;">
+                        <div style="flex:1"><label>NEX</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
+                        <div style="flex:2"><label>Classe</label>
+                            <select id="classe" onchange="atualizarTudo()">
+                                <option value="combatente">Combatente</option><option value="especialista">Especialista</option><option value="ocultista">Ocultista</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="status-box">
-                <div class="status-item">
-                    <label>PV</label><span id="res-pv">0</span>
-                    <div style="display: flex; justify-content: center; gap: 2px;">
-                        <button class="btn-status-mob" onclick="alterarStatus('pv', -1)">-</button>
-                        <button class="btn-status-mob" onclick="alterarStatus('pv', 1)">+</button>
-                    </div>
-                    <small>MÁX: <span id="max-pv">0</span></small>
-                </div>
-                <div class="status-item">
-                    <label>PE</label><span id="res-pe">0</span>
-                    <div style="display: flex; justify-content: center; gap: 2px;">
-                        <button class="btn-status-mob" onclick="alterarStatus('pe', -1)">-</button>
-                        <button class="btn-status-mob" onclick="alterarStatus('pe', 1)">+</button>
-                    </div>
-                    <small>MÁX: <span id="max-pe">0</span></small>
-                </div>
-                <div class="status-item">
-                    <label>SAN</label><span id="res-san">0</span>
-                    <div style="display: flex; justify-content: center; gap: 2px;">
-                        <button class="btn-status-mob" onclick="alterarStatus('san', -1)">-</button>
-                        <button class="btn-status-mob" onclick="alterarStatus('san', 1)">+</button>
-                    </div>
-                    <small>MÁX: <span id="max-san">0</span></small>
-                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><b>PV</b> <div><span id="res-pv">0</span>/<span id="max-pv">0</span> <button class="btn-status-mob" onclick="altStatus('pv',-1)">-</button><button class="btn-status-mob" onclick="altStatus('pv',1)">+</button></div></div>
+                <div class="barra-fundo"><div id="bar-pv" class="barra-progresso" style="background:var(--sangue)"></div></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><b>SAN</b> <div><span id="res-san">0</span>/<span id="max-san">0</span> <button class="btn-status-mob" onclick="altStatus('san',-1)">-</button><button class="btn-status-mob" onclick="altStatus('san',1)">+</button></div></div>
+                <div class="barra-fundo"><div id="bar-san" class="barra-progresso" style="background:var(--oculto)"></div></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><b>PE</b> <div><span id="res-pe">0</span>/<span id="max-pe">0</span> <button class="btn-status-mob" onclick="altStatus('pe',-1)">-</button><button class="btn-status-mob" onclick="altStatus('pe',1)">+</button></div></div>
+                <div class="barra-fundo"><div id="bar-pe" class="barra-progresso" style="background:var(--ouro)"></div></div>
             </div>
-            <button onclick="descansoLongo()" style="border-color: var(--ouro); color: var(--ouro); margin-bottom: 10px;">☕ Descanso Longo</button>
 
             <div class="secao">
-                <div id="log-dados" style="font-size: 0.6rem; color: #666; text-align: center;">AGUARDANDO...</div>
-                <div id="resultado-dado" style="font-size: 2rem; color: var(--ouro); font-weight: bold; text-align: center;">0</div>
-                <div style="display: flex; gap: 5px; margin-top: 10px;">
-                    <button onclick="rolarD(20)">D20</button>
-                    <button onclick="rolarD(6)">D6</button>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;">
+                    <div class="atrib-box" onclick="rolarTeste('FOR')"><label>FOR</label><input type="number" id="for" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                    <div class="atrib-box" onclick="rolarTeste('AGI')"><label>AGI</label><input type="number" id="agi" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                    <div class="atrib-box" onclick="rolarTeste('INT')"><label>INT</label><input type="number" id="int" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                    <div class="atrib-box" onclick="rolarTeste('VIG')"><label>VIG</label><input type="number" id="vig" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
+                    <div class="atrib-box" onclick="rolarTeste('PRE')"><label>PRE</label><input type="number" id="pre" class="atrib-val" value="1" onchange="atualizarTudo()" onclick="event.stopPropagation()"></div>
                 </div>
             </div>
 
             <div class="secao">
-                <h3>Perícias (<span id="count-pericias">0</span>)</h3>
-                <div id="lista-pericias" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
+                <button class="btn-descanso longo" onclick="descanso('longo')">Descanso Longo</button>
+                <button class="btn-descanso" onclick="descanso('curto')">Descanso Curto</button>
+                <div class="caixa-resultado"><div id="log-dados" style="font-size:0.5rem; color:#333; position:absolute; top:10px;">AGUARDANDO...</div><div id="resultado-dado" class="val-resultado">0</div></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:10px;">
+                    <button style="padding:12px; background:#080808; border:1px solid var(--sangue); color:var(--sangue);" onclick="rolarD(20)">D20</button>
+                    <button style="padding:12px; background:#080808; border:1px solid var(--sangue); color:var(--sangue);" onclick="rolarD(6)">D6</button>
+                    <button style="padding:12px; background:#080808; border:1px solid var(--sangue); color:var(--sangue);" onclick="rolarD(10)">D10</button>
+                </div>
             </div>
 
-            <button onclick="novoPersonagem()" style="margin-top: 20px; border-color: #222; color: #555;">+ Novo Agente</button>
-            <button onclick="deletarAtual()" style="margin-top: 10px; border-color: #444; color: #444;">Deletar Agente</button>
+            <div class="secao">
+                <h3>Armas <button onclick="addArma()" style="width:25px; height:25px; background:var(--sangue); border:none; color:white;">+</button></h3>
+                <div id="armas-container"></div>
+            </div>
+
+            <div class="secao">
+                <h3>Perícias (<span id="count-per">0</span>)</h3>
+                <div id="lista-pericias" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div>
+            </div>
+
+            <button class="btn-deletar-agente" onclick="deletarAgente()">Deletar Agente Permanentemente</button>
         </div>
     </section>
 
     <script>
-        const PERICIAS_LISTA = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
-        
-        const TRILHAS_DB = {
-            combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"],
-            especialista: ["Atirador Elite", "Infiltrador", "Médico Campo", "Negociador", "Técnico"],
-            ocultista: ["Conduíte", "Flagelador", "Graduado", "Lâmina", "Intuitivo"]
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(f, t, d, v=0.1) {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + d);
+            o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+        }
+        const sfx = { click: () => playSound(800, 'square', 0.05, 0.02), roll: () => { playSound(400, 'sawtooth', 0.2); setTimeout(()=>playSound(600,'sawtooth',0.1),100); }, warn: () => playSound(150, 'sine', 0.5, 0.2) };
+
+        const PERI = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Ciências", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
+        let personagens = JSON.parse(localStorage.getItem('sigo_v3_pro')) || [];
+        let indexAt = 0;
+
+        window.onload = () => {
+            const title = "ORDO REALITAS"; const el = document.getElementById('typing-title'); let i = 0;
+            function type() { if (i < title.length) { el.innerHTML += title.charAt(i); sfx.click(); i++; setTimeout(type, 120); } } type();
         };
 
-        let personagens = JSON.parse(localStorage.getItem('ordem_fichas')) || [];
-        let indexAtual = 0;
-
         function fazerLogin() {
-            if(document.getElementById('user').value) {
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                gerarCheckboxesPericias();
-                if(personagens.length === 0) novoPersonagem();
-                else carregarPersonagem(0);
-            }
+            sfx.click(); document.getElementById('tela-login').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
+            gerarPericias(); if(personagens.length === 0) novoAgente(); else carregarAgente(0);
         }
 
-        function rolarD(lados) {
-            const r = Math.floor(Math.random() * lados) + 1;
-            document.getElementById('log-dados').innerText = `1D${lados}:`;
-            document.getElementById('resultado-dado').innerText = r;
-        }
-
-        function rolarTeste(atrib) {
-            const val = parseInt(document.getElementById(atrib.toLowerCase()).value) || 0;
-            if(val <= 0) {
-                let d1 = Math.floor(Math.random() * 20) + 1;
-                let d2 = Math.floor(Math.random() * 20) + 1;
-                document.getElementById('log-dados').innerText = `TESTE ${atrib} (DEFICIT):`;
-                document.getElementById('resultado-dado').innerText = Math.min(d1, d2);
-            } else {
-                let r = [];
-                for(let i=0; i<val; i++) r.push(Math.floor(Math.random() * 20) + 1);
-                document.getElementById('log-dados').innerText = `TESTE ${atrib}:`;
-                document.getElementById('resultado-dado').innerText = Math.max(...r);
-            }
-        }
-
-        function alterarStatus(tipo, valor) {
-            const span = document.getElementById(`res-${tipo}`);
-            let atual = parseInt(span.innerText) || 0;
-            span.innerText = Math.max(0, atual + valor);
-            salvarDados();
-        }
-
-        function descansoLongo() {
-            document.getElementById('res-pv').innerText = document.getElementById('max-pv').innerText;
-            document.getElementById('res-pe').innerText = document.getElementById('max-pe').innerText;
-            document.getElementById('res-san').innerText = document.getElementById('max-san').innerText;
-            salvarDados();
-        }
-
-        function gerarCheckboxesPericias() {
-            const container = document.getElementById('lista-pericias');
-            container.innerHTML = PERICIAS_LISTA.map(p => `
-                <label class="pericia-item">
-                    <input type="checkbox" class="chk-pericia" data-nome="${p}" onchange="salvarDados()"> ${p}
-                </label>
-            `).join('');
-        }
+        function gerarPericias() { document.getElementById('lista-pericias').innerHTML = PERI.map(p => `<label style="display:flex; align-items:center; gap:5px; font-size:0.6rem; color:#666;"><input type="checkbox" class="chk-per" data-nome="${p}" onchange="atualizarTudo()"> ${p.substring(0,8)}.</label>`).join(''); }
 
         function atualizarTudo() {
-            const classe = document.getElementById('classe').value;
-            const nex = parseInt(document.getElementById('nex').value) || 5;
-            const vig = parseInt(document.getElementById('vig').value) || 0;
-            const pre = parseInt(document.getElementById('pre').value) || 0;
-            const int = parseInt(document.getElementById('int').value) || 0;
-
-            // Trilhas
-            const selTrilha = document.getElementById('trilha');
-            selTrilha.disabled = nex < 10;
-            if(nex < 10) {
-                selTrilha.innerHTML = "<option>Bloqueado</option>";
-            } else {
-                const atualT = selTrilha.value;
-                selTrilha.innerHTML = TRILHAS_DB[classe].map(t => `<option ${t===atualT?'selected':''}>${t}</option>`).join('');
-            }
-
-            const n = Math.floor((nex - 5) / 5);
-            let pv, pe, san;
-            if(classe==='combatente'){ pv=(20+vig)+(4+vig)*n; pe=(2+pre)+(2+pre)*n; san=12+3*n; }
-            else if(classe==='especialista'){ pv=(16+vig)+(3+vig)*n; pe=(3+pre)+(3+pre)*n; san=16+4*n; }
-            else { pv=(12+vig)+(2+vig)*n; pe=(4+pre)+(4+pre)*n; san=20+5*n; }
-
-            document.getElementById('max-pv').innerText = pv;
-            document.getElementById('max-pe').innerText = pe;
-            document.getElementById('max-san').innerText = san;
-            document.getElementById('count-pericias').innerText = (classe==='especialista' ? 7 : 3) + int;
-
-            salvarDados();
+            if(!personagens[indexAt]) return;
+            const n = parseInt(document.getElementById('nex').value) || 5;
+            const c = document.getElementById('classe').value;
+            const v = parseInt(document.getElementById('vig').value) || 0;
+            const i = parseInt(document.getElementById('int').value) || 0;
+            const av = Math.floor((n - 5) / 5);
+            let pB, pN, eB, eN, sB, sN;
+            if (c === 'combatente') { pB=20+v; pN=4+v; eB=2+i; eN=2+i; sB=12; sN=3; }
+            else if (c === 'especialista') { pB=16+v; pN=3+v; eB=3+i; eN=3+i; sB=16; sN=4; }
+            else { pB=12+v; pN=2+v; eB=4+i; eN=4+i; sB=20; sN=5; }
+            document.getElementById('max-pv').innerText = pB + (pN * av);
+            document.getElementById('max-pe').innerText = eB + (eN * av);
+            document.getElementById('max-san').innerText = sB + (sN * av);
+            document.getElementById('count-per').innerText = (c === 'especialista' ? 7 : 3) + i;
+            atualizarBarras(); salvarDados();
         }
 
-        function salvarDados() {
-            if(!personagens[indexAtual]) return;
-            const p = personagens[indexAtual];
-            p.nome = document.getElementById('nome-agente').value;
-            p.nex = document.getElementById('nex').value;
-            p.classe = document.getElementById('classe').value;
-            p.trilha = document.getElementById('trilha').value; // Salvando trilha
-            p.atributos = {
-                for: document.getElementById('for').value, agi: document.getElementById('agi').value,
-                int: document.getElementById('int').value, vig: document.getElementById('vig').value,
-                pre: document.getElementById('pre').value
-            };
-            p.statusAtuais = {
-                pv: document.getElementById('res-pv').innerText,
-                pe: document.getElementById('res-pe').innerText,
-                san: document.getElementById('res-san').innerText
-            };
-            p.pericias = Array.from(document.querySelectorAll('.chk-pericia:checked')).map(c => c.dataset.nome);
-            localStorage.setItem('ordem_fichas', JSON.stringify(personagens));
-            renderListaPersonagens();
+        function altStatus(t, v) {
+            sfx.click(); const s = document.getElementById(`res-${t}`); const m = parseInt(document.getElementById(`max-${t}`).innerText);
+            let val = Math.max(0, Math.min(m, (parseInt(s.innerText) || 0) + v)); s.innerText = val;
+            
+            // LÓGICA DE TRAUMA E GLITCH
+            document.body.classList.remove('sanidade-baixa', 'sanidade-critica', 'vida-baixa', 'vida-critica');
+            
+            const pvAt = parseInt(document.getElementById('res-pv').innerText);
+            const pvMx = parseInt(document.getElementById('max-pv').innerText);
+            const snAt = parseInt(document.getElementById('res-san').innerText);
+            const snMx = parseInt(document.getElementById('max-san').innerText);
+
+            if(pvAt <= 0) { document.body.classList.add('vida-critica'); sfx.warn(); }
+            else if(pvAt <= (pvMx * 0.25)) document.body.classList.add('vida-baixa');
+
+            if(snAt <= 0) { document.body.classList.add('sanidade-critica'); sfx.warn(); }
+            else if(snAt <= (snMx * 0.25)) document.body.classList.add('sanidade-baixa');
+
+            atualizarBarras(); salvarDados();
         }
 
-        function carregarPersonagem(idx) {
-            indexAtual = idx;
-            const p = personagens[idx];
+        function atualizarBarras() {
+            ['pv', 'pe', 'san'].forEach(t => {
+                const a = parseInt(document.getElementById(`res-${t}`).innerText) || 0;
+                const m = parseInt(document.getElementById(`max-${t}`).innerText) || 1;
+                document.getElementById(`bar-${t}`).style.width = (a/m*100) + "%";
+            });
+        }
+
+        function rolarD(l) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*l)+1; }
+        function rolarTeste(a) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*20)+1; }
+
+        function addArma(n="", d="DANO") {
+            const div = document.createElement('div'); div.className = "arma-row"; div.style = "display:grid; grid-template-columns:2fr 1fr 30px; gap:5px; margin-bottom:5px;";
+            div.innerHTML = `<input type="text" placeholder="Arma" value="${n}" oninput="salvarDados()"><button style="background:var(--sangue); border:none; color:white; font-size:0.6rem;" onclick="rolarD(20)">${d}</button><button onclick="this.parentElement.remove(); salvarDados()" style="border:none; background:transparent; color:#444;">X</button>`;
+            document.getElementById('armas-container').appendChild(div);
+        }
+
+        function carregarAgente(idx) {
+            indexAt = idx; const p = personagens[idx];
             document.getElementById('nome-agente').value = p.nome || "";
             document.getElementById('nex').value = p.nex || 5;
             document.getElementById('classe').value = p.classe || "combatente";
-            
-            // Atributos
             document.getElementById('for').value = p.atributos?.for || 1;
             document.getElementById('agi').value = p.atributos?.agi || 1;
             document.getElementById('int').value = p.atributos?.int || 1;
             document.getElementById('vig').value = p.atributos?.vig || 1;
             document.getElementById('pre').value = p.atributos?.pre || 1;
-            
-            // Rodar atualização para liberar trilha antes de carregar o valor dela
+            document.getElementById('armas-container').innerHTML = ""; (p.armas || []).forEach(a => addArma(a.n, a.d));
             atualizarTudo();
-            document.getElementById('trilha').value = p.trilha || "";
-            
-            document.querySelectorAll('.chk-pericia').forEach(c => c.checked = p.pericias?.includes(c.dataset.nome));
-            
-            if(p.statusAtuais) {
-                document.getElementById('res-pv').innerText = p.statusAtuais.pv;
-                document.getElementById('res-pe').innerText = p.statusAtuais.pe;
-                document.getElementById('res-san').innerText = p.statusAtuais.san;
-            } else {
-                document.getElementById('res-pv').innerText = document.getElementById('max-pv').innerText;
-                document.getElementById('res-pe').innerText = document.getElementById('max-pe').innerText;
-                document.getElementById('res-san').innerText = document.getElementById('max-san').innerText;
-            }
+            if(p.status) { ['pv','pe','san'].forEach(t => document.getElementById(`res-${t}`).innerText = p.status[t]); }
+            document.querySelectorAll('.chk-per').forEach(x => x.checked = (p.pericias || []).includes(x.dataset.nome));
+            atualizarBarras(); renderAbas();
         }
 
-        function novoPersonagem() {
-            personagens.push({ nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [] });
-            carregarPersonagem(personagens.length - 1);
+        function salvarDados() {
+            if(!personagens[indexAt]) return;
+            const p = personagens[indexAt];
+            p.nome = document.getElementById('nome-agente').value;
+            p.nex = document.getElementById('nex').value;
+            p.classe = document.getElementById('classe').value;
+            p.atributos = { for: document.getElementById('for').value, agi: document.getElementById('agi').value, int: document.getElementById('int').value, vig: document.getElementById('vig').value, pre: document.getElementById('pre').value };
+            p.status = { pv: document.getElementById('res-pv').innerText, pe: document.getElementById('res-pe').innerText, san: document.getElementById('res-san').innerText };
+            p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
+            p.armas = Array.from(document.querySelectorAll('.arma-row')).map(d => ({n: d.querySelector('input').value, d: d.querySelector('button').innerText}));
+            localStorage.setItem('sigo_v3_pro', JSON.stringify(personagens));
+            renderAbas();
         }
 
-        function deletarAtual() {
-            if(confirm("Apagar agente?")) {
-                personagens.splice(indexAtual, 1);
-                if(personagens.length === 0) novoPersonagem();
-                else carregarPersonagem(0);
-            }
+        function novoAgente() {
+            personagens.push({ nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [], armas: [], status: null });
+            carregarAgente(personagens.length - 1);
         }
 
-        function renderListaPersonagens() {
-            const container = document.getElementById('lista-personagens');
-            container.innerHTML = personagens.map((p, i) => `
-                <div class="btn-personagem ${i===indexAtual?'ativo':''}" onclick="carregarPersonagem(${i})">
-                    ${p.nome || 'AGENTE'}
-                </div>
-            `).join('');
+        function renderAbas() {
+            document.getElementById('lista-personagens').innerHTML = personagens.map((p, i) => `<div class="btn-personagem ${i===indexAt?'ativo':''}" onclick="carregarAgente(${i})">${p.nome || 'A'}</div>`).join('') + `<div class="btn-personagem" onclick="novoAgente()">+</div>`;
         }
+
+        function descanso(tipo) {
+            ['pv', 'pe', 'san'].forEach(t => {
+                const m = parseInt(document.getElementById(`max-${t}`).innerText);
+                if(tipo==='longo') document.getElementById(`res-${t}`).innerText = m;
+                else if(t !== 'san') { let val = parseInt(document.getElementById(`res-${t}`).innerText); document.getElementById(`res-${t}`).innerText = Math.min(m, val + Math.floor(m/2)); }
+            });
+            altStatus('pv', 0); // Dispara a verificação de glitch
+        }
+
+        function mudarFoto() { const url = prompt("URL da Foto:"); if(url) document.getElementById('img-retrato').src = url; }
+        function deletarAgente() { if(confirm("Apagar permanentemente?")) { personagens.splice(indexAt, 1); if(personagens.length===0) novoAgente(); else carregarAgente(0); } }
     </script>
 </body>
 </html>
