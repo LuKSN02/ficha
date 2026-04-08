@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S.I.G.O. - Mobile V3.1 PRO</title>
-    <script src="https://cdnjs.cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-
-        
-        @import url('https://fonts.googleapis.com');
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
         
         :root { 
             --sangue: #8b0000; 
@@ -47,7 +46,7 @@
         @keyframes tremor-v { 0%, 100% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } }
         @keyframes glitch-s { 0% { transform: translate(0); } 50% { transform: translate(-3px, 2px); } 100% { transform: translate(3px, -2px); } }
 
-        /* --- LOGIN (IDÊNTICO À IMAGEM) --- */
+        /* --- LOGIN --- */
         #tela-login { height: 100vh; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); }
         .box-login { background: #080808; padding: 50px 30px; border: 1px solid #1a1a1a; border-top: 2px solid var(--sangue-vibrante); text-align: center; width: 90%; max-width: 420px; }
         .box-login h2 { color: var(--sangue-vibrante); font-size: 1.6rem; letter-spacing: 6px; margin-bottom: 5px; min-height: 1.6rem; }
@@ -78,28 +77,26 @@
         .btn-personagem { background: #000; color: #444; border: 1px solid #222; padding: 8px 12px; white-space: nowrap; font-size: 0.65rem; }
         .btn-personagem.ativo { border-color: var(--sangue); color: var(--sangue); border-bottom-width: 3px; }
         .arma-row, .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 30px; gap: 5px; margin-bottom: 5px; }
+
+        /* --- ESTILOS DO GRIMÓRIO --- */
+        .modal-grimorio { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); overflow-y: auto; }
+        .grimorio-content { background: #050505; margin: 5% auto; padding: 20px; border: 1px solid var(--oculto); width: 90%; max-width: 800px; box-shadow: 0 0 30px var(--oculto); }
+        .grimorio-header { text-align: center; color: #9932cc; font-size: 1.5rem; letter-spacing: 4px; border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 20px; position: relative;}
+        .close-grimorio { position: absolute; right: 0; top: 0; color: var(--sangue-vibrante); font-size: 2rem; cursor: pointer; }
+        .filter-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        .filter-btn { background: transparent; border: 1px solid var(--sangue); color: var(--sangue-vibrante); padding: 5px 10px; font-size: 0.6rem; cursor: pointer; }
+        .filter-btn.active { background: var(--sangue); color: white; }
+        .ritual-item-grimorio { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #1a1a1a; margin-bottom: 5px; background: #080808; }
+        .ritual-item-grimorio span { color: #9932cc; font-size: 0.8rem; }
+        .btn-add-ritual { background: transparent; border: 1px solid #9932cc; color: #9932cc; padding: 5px 10px; font-size: 0.6rem; cursor: pointer; }
+
         @media print {
-    /* Esconde tudo que não é a ficha (botões, login, etc) */
-    body * { visibility: hidden; background: #000 !important; }
-    #dashboard, .container-ficha, .container-ficha * { visibility: visible; }
-    
-    /* Reposiciona a ficha no topo da página do PDF */
-    .container-ficha {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    /* Esconde botões de deletar e adicionar dentro da ficha no PDF */
-    button, .btn-del, #lista-personagens { display: none !important; }
-    
-    /* Garante que as cores de fundo (Barras de PV/SAN) apareçam */
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-}
-
+            body * { visibility: hidden; background: #000 !important; }
+            #dashboard, .container-ficha, .container-ficha * { visibility: visible; }
+            .container-ficha { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
+            button, .btn-del, #lista-personagens { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -113,16 +110,18 @@
         </div>
     </section>
 
+    <input type="file" id="input-foto" style="display: none;" accept="image/*" onchange="processarFoto(this)">
+    
     <section id="dashboard" style="display:none;">
         <div class="container-ficha">
             <div id="lista-personagens" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--sangue);"></div>
             
             <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
                 <div onclick="mudarFoto()" style="width: 80px; height: 80px; border: 2px solid var(--sangue); border-radius: 50%; overflow: hidden; background: #000; flex-shrink: 0; cursor: pointer;">
-                    <img id="img-retrato" src="https://i.imgur.com" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img id="img-retrato" src="https://i.imgur.com/h679S9V.png" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <div style="flex-grow: 1;">
-                    <label>Agente</label><input type="text" id="nome-agente" oninput="salvarDados()">
+                    <label>Agente</label><input type="text" id="nome-agente" oninput="atualizarNome(this.value)">
                     <div style="display: flex; gap: 5px;">
                         <div style="flex:1"><label>NEX %</label><input type="number" id="nex" value="5" step="5" onchange="atualizarTudo()"></div>
                         <div style="flex:2"><label>Classe</label>
@@ -174,169 +173,482 @@
             <div class="secao"><h3>Armas <button onclick="addArma()">+</button></h3><div id="armas-container"></div></div>
             <div class="secao"><h3>Inventário (<span id="carga-at">0</span>/<span id="carga-max">0</span>) <button onclick="addItem()">+</button></h3><div id="itens-container"></div></div>
             <div class="secao"><h3>Perícias (<span id="count-per">0</span>)</h3><div id="lista-pericias" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div></div>
-            <div class="secao"><h3>Rituais (Círculo: <b id="circ-max">1º</b>)</h3><textarea id="rituais" rows="4" oninput="salvarDados()"></textarea></div>
-            <button onclick="deletarAgente()" style="background:transparent; border:none; color:#222; width:100%; margin-top:40px; font-size:0.55rem;">DELETAR AGENTE PERMANENTEMENTE</button>
-            <button onclick="exportarPDF()" style="background: #1a1a1a; color: var(--ouro); border-color: var(--ouro); width:100%; font-size: 0.6rem; margin-top: 40px;">
-            📂 EXPORTAR FICHA (PDF)
-            </button>
+            
+            <div class="secao" style="border-color: #9932cc;">
+                <h3 style="color: #9932cc;">Rituais (<span id="circ-max">1º</span> Círculo)
+                    <button onclick="abrirGrimorio()" style="background:transparent; border:1px solid #9932cc; color:#9932cc; padding:2px 8px; font-size:0.7rem;">+ APRENDER</button>
+                </h3>
+                <div id="meus-rituais"></div>
+            </div>
 
+            <button onclick="deletarAgente()" style="background:transparent; border:none; color:#222; width:100%; margin-top:40px; font-size:0.55rem;">DELETAR AGENTE PERMANENTEMENTE</button>
+            <button onclick="exportarPDF()" style="background: #1a1a1a; color: var(--ouro); border-color: var(--ouro); width:100%; font-size: 0.6rem; margin-top: 40px;">📂 EXPORTAR FICHA (PDF)</button>
         </div>
     </section>
 
+    <div id="modalGrimorio" class="modal-grimorio">
+        <div class="grimorio-content">
+            <div class="grimorio-header">
+                GRIMÓRIO DO OUTRO LADO
+                <span class="close-grimorio" onclick="fecharGrimorio()">&times;</span>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filtrarRitual('todos', this)">TODOS</button>
+                <button class="filter-btn" onclick="filtrarRitual('sangue', this)">SANGUE</button>
+                <button class="filter-btn" onclick="filtrarRitual('morte', this)">MORTE</button>
+                <button class="filter-btn" onclick="filtrarRitual('energia', this)">ENERGIA</button>
+                <button class="filter-btn" onclick="filtrarRitual('conhecimento', this)">CONHECIMENTO</button>
+            </div>
+            <div id="lista-grimorio-rituais"></div>
+        </div>
+    </div>
+
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(f, t, d, v=0.1) {
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
-            g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + d);
-            o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+    // --- DATABASE RITUAIS ---
+const DB_RITUAIS = [
+    // --- 1º CÍRCULO ---
+    { n: "Amaldiçoar Tecnologia", e: "energia", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { 
+        n: "Cicatrização", 
+        e: "morte", 
+        c: 1, 
+        d: { n: "3d8+3", d: "5d8+5", v: "7d8+7" },
+        desc: "Você acelera o tempo ao redor das feridas do alvo. O alvo recupera PV igual ao valor rolado, mas envelhece 1d4 anos." 
+    },
+    { n: "Consumir Manancial", e: "morte", c: 1, d: { n: "2d6", d: "4d6", v: "6d6" } },
+    { n: "Decadência", e: "morte", c: 1, d: { n: "2d8", d: "3d8", v: "5d8" } },
+    { n: "Espirais de Agonia", e: "morte", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Lentidão", e: "morte", c: 1, d: { n: "1d20", d: "1d20+5", v: "1d20+10" } },
+    { n: "Perturbação", e: "conhecimento", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { 
+        n: "Amaldiçoar Arma", 
+        e: "sangue", 
+        c: 1, 
+        d: { n: "1d6", d: "2d6", v: "3d6" },
+        desc: "A arma é envolta em sangue fervente, causando dano extra do elemento sangue." 
+    },
+    { n: "Armadura de Sangue", e: "sangue", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" },desc: "Seu sangue escorre para fora do corpo, cobrindo-o sob a forma de uma carapaça que fornece +5 em Defesa. Esse bônus é cumulativo com outros rituais, mas não com bônus fornecido por equipamento. Discente (+5 PE): muda o efeito para “fornece +10 na Defesa e resistência a balístico, corte, impacto e perfuração 5”. Requer 3º círculo. Verdadeiro (+9 PE): muda o efeito para “fornece +15 na Defesa e resistência a balístico, corte, impacto e perfuração 10”. Requer 4º círculo e afinidade." },
+    { n: "Fortalecimento Sensorial", e: "sangue", c: 1, d: { n: "1d20", d: "1d20+5", v: "1d20+10" }, desc:"Você potencializa seus sentidos, recebendo +1d20 em Investigação, Luta, Percepção e Pontaria. Discente (+2 PE): além do normal, seus inimigos sofrem –1d20 em testes de ataque contra você. Requer 2º círculo. Verdadeiro (+5 PE): além do normal, você apura seus sentidos para perceber qualquer perigo ou ameaça. Você fica imune às condições surpreendido e desprevenido e recebe +10 em Defesa e Reflexos. Requer 4º círculo e afinidade." },
+    { n: "Hemofagia", e: "sangue", c: 1, d: { n: "2d6", d: "4d6", v: "6d6" }, desc:"Você arranca o sangue do corpo do alvo através de pele dele, causando 6d6 pontos de dano de Sangue. Você então absorve esse sangue, recuperando pontos de vida iguais à metade do dano causado. Discente (+3 PE): muda a resistência para “nenhuma”. Como parte da execução do ritual, você pode usar uma arma em vez das mãos para fazer um ataque corpo a corpo contra o alvo. Se acertar, causa o dano do ataque e do ritual, recuperando pontos de vida em quantidade igual à metade do dano total causado. Verdadeiro (+7 PE): muda o alcance para “pessoal”, o alvo para “você” e a duração para “cena”. Em vez do normal, a cada rodada você pode gastar uma ação padrão para tocar 1 ser e causar 4d6 pontos de dano de Sangue. Você recupera pontos de vida iguais à metade do dano causado. Requer 4º círculo." },
+    { n: "Ódio Incontrolável", e: "sangue", c: 1, d: { n: "1d20", d: "1d20+2", v: "1d20+5" }, desc:"O alvo entra em um frenesi, aumentando sua agressividade e capacidade de luta. Ele recebe +2 em testes de ataque e rolagens de dano corpo a corpo e resistência a balístico, corte, impacto e perfuração 5. Enquanto o efeito durar, o alvo não pode fazer nenhuma ação que exige calma e concentração (como usar a perícia Furtividade ou conjurar rituais), e deve sempre atacar um alvo em sua rodada, mesmo que seja um aliado se ele for o único a seu alcance. Discente (+2 PE): além do normal, sempre que o alvo usar a ação agredir, pode fazer um ataque corpo a corpo adicional contra o mesmo alvo. Verdadeiro (+5 PE): muda o bônus de ataque e dano para +5 e o alvo passa a sofrer apenas metade do dano dos tipos balístico, corte, impacto e perfuração. Requer 3º círculo e afinidade." },
+    { n: "Amaldiçoar Tecnologia", e: "energia", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" }, desc:"Você imbui o alvo com Energia, fazendo-o funcionar acima de sua capacidade. O item recebe uma modificação a sua escolha. Discente (+2 PE): muda para duas modificações. Requer 2º círculo. Verdadeiro (+5 PE): muda para três modificações. Requer 3º círculo e afinidade." },
+    { n: "Chamas do Caos", e: "energia", c: 1, d: { n: "2d6", d: "4d6", v: "6d6" }, desc:"Você manipula o calor e o fogo. Ao conjurar o ritual, escolha um dos seguintes efeitos. Chamejar: o alvo é uma arma corpo a corpo. Ela causa +1d6 pontos de dano de fogo. Esquentar: o alvo é um objeto, que começa a esquentar. Ele sofre 1d6 pontos de dano de fogo por rodada e causa o mesmo dano a qualquer ser que o esteja empunhando ou vestindo. A critério do mestre, o objeto ou o ser pode pegar fogo. Um ser pode gastar uma ação completa para resfriar o objeto (jogando areia ou se jogando numa fonte de água próxima, por exemplo) e cancelar o efeito do ritual. Extinguir: o alvo é uma chama de tamanho Grande ou menor, que é apagada. Isso cria uma nuvem de fumaça que ocupa uma esfera de 3m de raio centrada onde estava a chama. Dentro da fumaça, seres têm camuflagem. Modelar: o alvo é uma chama de tamanho Grande ou menor. A cada rodada, você pode gastar uma ação livre para movimentá-la 9m em qualquer direção. Se atravessar o espaço ocupado por um ser, ela causa 3d6 pontos de dano de fogo nele. Um ser só pode sofrer dano dessa maneira uma vez por rodada. Discente (+3 PE): muda a duração para sustentada e adiciona “Resistência: Reflexos reduz à metade”. Em vez do normal, uma vez por rodada você pode gastar uma ação de movimento para projetar uma labareda, num alvo em alcance curto. O alvo sofre 4d6 pontos de dano de Energia (Reflexos reduz à metade). Verdadeiro (+ 7 PE): como discente, mas muda o dano para 8d6. Requer 3º círculo." },
+    { n: "Eletrocussão", e: "energia", c: 1, d: { n: "1d6", d: "3d6", v: "6d6" }, desc:"Você manifesta e dispara uma corrente elétrica contra o alvo, que sofre 3d6 pontos de dano de eletricidade e fica vulnerável por uma rodada. Se passar no teste de resistência, sofre apenas metade do dano e evita a condição. Se usado contra objetos eletrônicos, este ritual causa o dobro de dano e ignora resistência. Discente (+2 PE): muda o alvo para “área: linha de 30m”. Você dispara um poderoso raio que causa 6d6 pontos de dano de Energia em todos os seres e objetos livres na área. Requer 2º círculo. Verdadeiro (+5 PE): muda a área para “alvos escolhidos”. Em vez do normal, você dispara vários relâmpagos, um para cada alvo escolhido, causando 8d6 pontos de dano de Energia em cada. Requer 3º círculo." },
+    { n: "Luz", e: "energia", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" }, desc:"O alvo emite luz de cores alternadas e brilhantes (mas não produz calor) em uma área com 9m de raio. O objeto pode ser guardado (em um bolso, por exemplo) para interromper a luz, que voltará a funcionar caso o objeto seja revelado. Se o alvo for um objeto em posse de uma pessoa involuntária, ela tem direito a um teste de Vontade para anular o efeito. Discente (+2 PE): muda o alcance para longo e o efeito para 4 esferas brilhantes. Cria esferas flutuantes de pura luz com 10cm de diâmetro, que você pode posicionar onde quiser dentro do alcance. Você pode enviar uma esfera à frente, outra para trás, outra para cima e manter uma perto de você, por exemplo. Uma vez por rodada, você pode mover as esferas com uma ação livre. Cada esfera ilumina uma área de 6m de raio, mas não produz calor. Se uma esfera ocupar o espaço de um ser, ele fica ofuscado e sua silhueta pode ser vista claramente (ela não recebe camuflagem por escuridão ou invisibilidade). Requer 2º círculo. Verdadeiro (+5 PE): a luz é cálida como a do sol. Dentro da área seus aliados recebem +1d20 em testes de Vontade, e seus inimigos ficam ofuscados. Requer 3º círculo." },
+    { n: "Polarização Caótica", e: "energia", c: 1, d: { n: "2d6", d: "4d6", v: "6d6" }, desc:"Você gera uma aura magnética sobrenatural. Escolha um dos efeitos a seguir. Atrair: você pode usar uma ação de movimento para puxar um objeto metálico de espaço 2 ou menor dentro do alcance. Se o objeto estiver livre, voa para suas mãos (caso tenha mãos livres para apanhá-lo) ou para seus pés. Repelir: você repele objetos de espaço 2 ou menor (o que envolve quase todos os projéteis e armas de arremesso), recebendo resistência a balístico, corte, impacto e perfuração 5. Discente (+2 PE): nesta versão a energia magnética é expelida de uma única vez e arremessa até 10 objetos, ou um total de 10 espaços, o que for menor. Os objetos devem estar a até 3m uns dos outros. Objetos arremessados podem atingir seres em seu caminho, causando de 1 ponto de dano de impacto por espaço (objetos macios, sem pontas ou sem fio) até 1d6 pontos de dano por espaço (objetos duros, pontudos ou afiados). Seres atingidos têm direito a um teste de Reflexos para reduzir o dano à metade. Seres dentro da capacidade de carga do efeito podem ser arremessadas, mas têm direito a um teste de Vontade para evitar o efeito (em si mesmos ou em objetos que estejam segurando). Um ser arremessado contra uma superfície sólida sofre 1d6 pontos de dano de impacto para cada 3m que “voou” no deslocamento (incluindo outros seres; nesse caso, ambos sofrem o dano). Verdadeiro (+5 PE): muda o alcance para médio. Você pode usar uma ação de movimento para fazer com que a força magnética levite e mova um ser ou objeto de espaço 10 ou menor por até 9m em qualquer direção dentro do alcance. Um ser pode anular o efeito sobre ele, ou sobre um objeto que possua, passando num teste de Vontade. O alvo cai no chão se sair do alcance ou o efeito terminar." },
+    { n: "Sopro do Caos", e: "energia", c: 1, d: { n: "2d6", d: "4d6", v: "6d6" }, desc:"Você altera os movimentos de massas de ar de forma caótica. Ao conjurar o ritual, escolha um dos efeitos abaixo. Ascender: cria uma corrente de ar ascendente capaz de erguer do chão um ser ou objeto Médio, fazendo o alvo flutuar para cima e para baixo conforme sua vontade. Você pode gastar uma ação de movimento para subir ou descer o alvo até 6m por rodada, até um máximo de 30m de altura. Você não pode mover o alvo horizontalmente — mas o alvo pode, por exemplo, escalar uma colina ou se apoiar no teto para mover-se lateralmente (com metade de seu deslocamento normal). Um ser levitando fica vulnerável. Alvos involuntários têm direito a um teste de Fortitude no início de cada um de seus turnos para encerrar o efeito. Derrubar um alvo flutuando (simplesmente parando a corrente de ar) causa o dano normal de queda, mas um alvo que passe no teste pode “nadar” para o chão contra a corrente. Você pode usar essa opção para fazer uma manobra derrubar contra um alvo voador dentro do alcance, usando Ocultismo em vez de Luta. Sopro: cria uma lufada de vento a partir de suas mãos, que empurra qualquer alvo Médio ou menor, em um cone de 4,5m — faça uma manobra empurrar usando Ocultismo em vez de Luta, usando uma mesma rolagem sua para todos os alvos. A lufada de vento também faz qualquer coisa que um vento forte e súbito faria, como levantar pó, dispersar vapores, apagar chamas, espalhar papéis ou mover uma embarcação. Manter o sopro ativo exige uma ação padrão no seu turno. Vento: cria uma área de vento forte dentro do alcance. Se conjurada numa área que já esteja com algum efeito de vento, aumenta esse efeito em um passo. Manter o vento ativo requer uma ação de movimento. Você também pode usar essa opção para reduzir os efeitos de vento em uma área. Discente (+3 PE): passa a afetar alvos Grandes. Verdadeiro (+9 PE): passa a afetar alvos Enormes." },
+    { n: "Compreensão Paranormal", e: "conhecimento", c: 1, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" }, desc:"O ritual confere a você compreensão sobrenatural da linguagem. Se tocar um objeto contendo informação (ou livro, um dispositivo com uma gravação...), você entende as palavras mesmo que não conheça seu idioma, contanto que se trate de um idioma humano (não funciona com símbolos ou sigilos paranormais). Se tocar uma pessoa, pode se comunicar com ela como se falassem um idioma em comum. Se tocar um ser não inteligente, como um animal, pode perceber seus sentimentos básicos, como medo ou felicidade. Um alvo involuntário tem direito a um teste de Vontade. Discente (+2 PE): muda o alcance para “curto” e o alvo para “alvos escolhidos”. Você pode entender todos os alvos afetados. Requer 2º círculo. Verdadeiro (+5 PE): muda o alcance para “pessoal” e o alvo para “você”. Em vez do normal, você pode falar, entender e escrever qualquer idioma humano. Requer 3º círculo." },
+    { n: "Ouvir Sussurros", e: "conhecimento", c: 1, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" }, desc:"O ritual conecta você com os sussurros, memórias ecoadas pelo Outro Lado, que você pode consultar para receber conhecimento proibido em relação a uma ação que tomará em breve. Ao usar este ritual, faça uma pergunta sobre um evento que você está prestes a fazer (na mesma cena) que possa ser respondida com “sim” ou “não”. O mestre rola 1d6 em segredo; com um resultado de 2 a 6, o ritual funciona e você recebe sua resposta, que pode ser “sim”, “não” ou “sim e não” Com um resultado 1, o ritual falha e oferece o resultado “não”. Não há como saber se esse resultado foi dado porque o ritual falhou ou não. Lançar este ritual múltiplas vezes sobre o mesmo assunto gera sempre o primeiro resultado. Por exemplo, você está prestes a entrar em um prédio que pode ser o esconderijo de um cultista. Se você perguntar para os sussurros se o cultista está mesmo nesse local, a resposta pode ser “sim” (ele está no prédio), “não” (ele não está no prédio) ou “sim e não” (ele está no prédio, mas usou um ritual para se esconder seu corpo físico em uma dimensão do Outro Lado...). Isso é útil para saber se você deve (ou não) gastar recursos para um possível combate. Discente (+2 PE): muda a execução para 1 minuto. Em vez do normal, você pode consultar os ecos fazendo uma pergunta sobre um evento que poderá acontecer até um dia no futuro. O mestre rola a chance de falha; com um resultado de 2 a 6, você recebe uma resposta, desde uma simples frase até uma profecia ou enigma. Em geral, este uso oferece pistas, indicando um caminho a tomar para descobrir a resposta que se procura. Numa falha você não recebe resposta alguma. Requer 2º círculo. Verdadeiro (+5 PE): muda a execução para 10 minutos e a duração para 5 rodadas. Em vez do normal, você consulta os ecos, podendo fazer uma pergunta por rodada, desde que ela possa ser respondida com “sim”, “não” ou “ninguém sabe”. O mestre rola a chance de falha para cada pergunta. Em caso de falha, a resposta também é “ninguém sabe”. Requer 3º círculo." },
+    { n: "Tecer Ilusão", e: "conhecimento", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" }, desc:"Este ritual cria uma ilusão visual (uma pessoa, uma parede...) ou sonora (um grito de socorro, um uivo assustador...). O ritual cria apenas imagens ou sons simples, com volume equivalente à voz de uma pessoa para cada cubo de 1,5m no efeito. Não é possível criar cheiros, texturas ou temperaturas, nem sons complexos, como uma música ou diálogo. Seres e objetos atravessam uma ilusão sem sofrer dano, mas o ritual pode, por exemplo, esconder uma armadilha ou emboscada. A ilusão é dissipada se você sair do alcance. Discente (+2 PE): muda o efeito para até 8 cubos de 1,5m e a duração para sustentada. Você pode criar ilusões de imagem e sons combinados, e pode criar sons complexos, odores e sensações térmicas. Também pode criar sensações táteis, como texturas; objetos ainda atravessam a ilusão, mas seres não conseguem atravessá-la sem passar em um teste de Vontade. A cada rodada, você pode usar uma ação livre para mover a imagem ou alterar o som, como aumentar o volume ou fazer com que pareça se afastar ou se aproximar, ainda dentro dos limites do efeito. Você pode, por exemplo, criar a ilusão de um fantasma que anda pela sala, controlando seus movimentos. A ilusão ainda é incapaz de causar ou sofrer dano. Quando você para de sustentar o ritual, a imagem ou som persistem por mais uma rodada antes do ritual se dissipar. Requer 2º círculo. Verdadeiro (+ 5 PE): você cria a ilusão de um perigo mortal. Quando o ritual é conjurado, e no início de cada um de seus turnos, um alvo interagindo com a ilusão deve fazer um teste de Vontade; se falhar, acredita que a ilusão é real e sofre 6d6 pontos de dano de Conhecimento. O alvo racionaliza o efeito sempre que falha no teste (por exemplo, acredita que o mesmo teto pode cair sobre ele várias vezes). Se um alvo passar em dois testes de Vontade seguidos, o efeito é anulado para ele. Requer 3º círculo." },
+
+    // --- 2º CÍRCULO ---
+    { n: "Tecer Ilusão", e: "conhecimento", c: 2, d: { n: "1d20", d: "2d20", v: "3d20" } },
+    { n: "Descarnar", e: "sangue", c: 2, d: { n: "6d6", d: "10d6", v: "14d6" } },
+    { n: "Flagelo de Sangue", e: "sangue", c: 2, d: { n: "2d10", d: "4d10", v: "6d10" } },
+    { n: "Mão de Sangue", e: "sangue", c: 2, d: { n: "2d8", d: "4d8", v: "6d8" } },
+    { n: "Transfusão de Sangue", e: "sangue", c: 2, d: { n: "3d8+3", d: "5d8+5", v: "7d8+7" } },
+    { n: "Deflagração de Energia", e: "energia", c: 2, d: { n: "6d6", d: "10d6", v: "14d6" } },
+    { n: "Eco Espiral", e: "morte", c: 2, d: { n: "1d6", d: "3d6", v: "6d6" } },
+    { n: "Manto de Sombras", e: "morte", c: 2, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" } },
+    { n: "Paralisia", e: "morte", c: 2, d: { n: "1d20", d: "1d20+5", v: "1d20+10" } },
+    { n: "Poeira da Escuridão", e: "morte", c: 2, d: { n: "2d6", d: "4d6", v: "6d6" } },
+    { n: "Aceleration", e: "energia", c: 2, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" } },
+    { n: "Campo Elétrico", e: "energia", c: 2, d: { n: "6d6", d: "10d6", v: "14d6" } },
+    { n: "Dissipação Espontânea", e: "energia", c: 2, d: { n: "4d6", d: "8d6", v: "12d6" } },
+    { n: "Resistência a Energia", e: "energia", c: 2, d: { n: "10", d: "20", v: "30" } },
+    { n: "Salto Dimensional", e: "energia", c: 2, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Apagar Memória", e: "conhecimento", c: 2, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" } },
+    { n: "Confusão", e: "conhecimento", c: 2, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Enfeitiçar", e: "conhecimento", c: 2, d: { n: "1d20+5", d: "1d20+10", v: "1d20+15" } },
+    { n: "Localização", e: "conhecimento", c: 2, d: { n: "1d20", d: "1d20+5", v: "1d20+10" } },
+    
+
+    // --- 3º CÍRCULO ---
+    { n: "Inexistir", e: "conhecimento", c: 3, d: { n: "10d10", d: "20d10", v: "30d10" } },
+    { n: "Fervura de Sangue", e: "sangue", c: 3, d: { n: "6d6", d: "10d6", v: "14d6" } },
+    { n: "Invocar Besta", e: "sangue", c: 3, d: { n: "4d10", d: "6d10", v: "8d10" } },
+    { n: "Poder do Sangue", e: "sangue", c: 3, d: { n: "2d20", d: "3d20", v: "4d20" } },
+    { n: "Zumbificar", e: "sangue", c: 3, d: { n: "1d20", d: "2d20", v: "3d20" } },
+    { n: "Eriçar Sombras", e: "morte", c: 3, d: { n: "6d8", d: "10d8", v: "14d8" } },
+    { n: "Mão de Morte", e: "morte", c: 3, d: { n: "10d6", d: "15d6", v: "20d6" } },
+    { n: "Purgatório", e: "morte", c: 3, d: { n: "5d6", d: "10d6", v: "15d6" } },
+    { n: "Sopro da Entropia", e: "morte", c: 3, d: { n: "10d8", d: "15d8", v: "20d8" } },
+    { n: "Convocação Instantânea", e: "energia", c: 3, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Fluxo Temporal", e: "energia", c: 3, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+    { n: "Teletransporte", e: "energia", c: 3, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Alterar Memória", e: "conhecimento", c: 3, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+    { n: "Clarividência", e: "conhecimento", c: 3, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+    { n: "Contato", e: "conhecimento", c: 3, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+    { n: "Vidência", e: "conhecimento", c: 3, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+
+    // --- 4º CÍRCULO ---
+    { n: "Canalizar o Medo", e: "medo", c: 4, d: { n: "10d12", d: "20d12", v: "30d12" } },
+    { n: "Sopro do Outro Lado", e: "energia", c: 4, d: { n: "15d6", d: "25d6", v: "35d6" } },
+    { n: "Corpo de Sangue", e: "sangue", c: 4, d: { n: "10d10", d: "15d10", v: "20d10" } },
+    { n: "Explosão de Sangue", e: "sangue", c: 4, d: { n: "15d6", d: "25d6", v: "35d6" } },
+    { n: "Possessão de Sangue", e: "sangue", c: 4, d: { n: "1d20+10", d: "1d20+15", v: "1d20+20" } },
+    { n: "Fim de Tudo", e: "morte", c: 4, d: { n: "20d6", d: "40d6", v: "60d6" } },
+    { n: "Invocar o Ente", e: "morte", c: 4, d: { n: "10d8", d: "20d8", v: "30d8" } },
+    { n: "Olhar do Além", e: "morte", c: 4, d: { n: "1d20+15", d: "1d20+20", v: "1d20+25" } },
+    { n: "Tempo Destorcido", e: "morte", c: 4, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Aniquilação", e: "energia", c: 4, d: { n: "20d6", d: "30d6", v: "40d6" } },
+    { n: "Forma de Energia", e: "energia", c: 4, d: { n: "10d6", d: "15d6", v: "20d6" } },
+    { n: "Sopro do Outro Lado", e: "energia", c: 4, d: { n: "15d6", d: "25d6", v: "35d6" } },
+    { n: "Terremoto", e: "energia", c: 4, d: { n: "10d8", d: "15d8", v: "20d8" } },
+    { n: "Conhecimento Aplicado", e: "conhecimento", c: 4, d: { n: "1d20+15", d: "1d20+20", v: "1d20+25" } },
+    { n: "Dominação", e: "conhecimento", c: 4, d: { n: "1d20+15", d: "1d20+20", v: "1d20+25" } },
+    { n: "Mente Enxame", e: "conhecimento", c: 4, d: { n: "10d6", d: "15d6", v: "20d6" } },
+    { n: "Amaldiçoar Objeto", e: "medo", c: 1, d: { n: "1d6", d: "2d6", v: "3d6" } },
+    { n: "Canalizar o Medo", e: "medo", c: 4, d: { n: "10d12", d: "20d12", v: "30d12" } },
+    { n: "Cisne Negro", e: "medo", c: 4, d: { n: "20d6", d: "30d6", v: "40d6" } },
+    { n: "Medo Tangível", e: "medo", c: 2, d: { n: "4d6", d: "8d6", v: "12d6" } }
+
+];
+function verDescricao(nome) {
+    const ritual = DB_RITUAIS.find(r => r.n === nome);
+    if (ritual) {
+        alert(`--- ${ritual.n.toUpperCase()} ---\n\n${ritual.desc}`);
+    } else {
+        alert("Descrição não encontrada.");
+    }
+}
+    
+    
+
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(f, t, d, v=0.1) {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+        g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + d);
+        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+    }
+    const sfx = { click: () => playSound(800, 'square', 0.05, 0.02), roll: () => { playSound(400, 'sawtooth', 0.2); setTimeout(()=>playSound(600,'sawtooth',0.1),100); }, warn: () => playSound(150, 'sine', 0.5, 0.2) };
+
+    const PERI = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Ciências", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
+    const TRILHAS = { combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"], especialista: ["Atirador Elite", "Infiltrador", "Médico Campo", "Negociador", "Técnico"], ocultista: ["Conduíte", "Flagelador", "Graduado", "Lâmina", "Intuitivo"] };
+    const ORIGENS = { academico: "Investigação e Saber.", "agente-saude": "Medicina.", amnesico: "Duas perícias.", artista: "Artes e Diplomacia.", atleta: "Atletismo e Acrobacia.", chef: "Descanso.", criminoso: "Crime e Furtividade.", "cultista-arrependido": "Ocultismo e Vontade.", desgarrado: "Fortitude.", executivo: "Diplomacia.", investigador: "Investigação.", lutador: "Luta.", magnata: "Diplomacia.", militar: "Pontaria.", operario: "Fortitude.", policial: "Defesa+1.", religioso: "Vontade.", "servidor-publico": "Vontade.", "teorico-conspiracao": "Ocultismo.", "ti-agente": "Tecnologia.", vitima: "Vontade." };
+
+    let personagens = JSON.parse(localStorage.getItem('sigo_v3_pro')) || [];
+    let indexAtual = 0;
+
+    window.onload = () => {
+        const title = "ORDO REALITAS"; const el = document.getElementById('typing-title'); let i = 0;
+        function type() { if (i < title.length) { el.innerHTML += title.charAt(i); sfx.click(); i++; setTimeout(type, 120); } } type();
+    };
+
+    function fazerLogin() {
+        sfx.click(); 
+        document.getElementById('tela-login').style.display = 'none'; 
+        document.getElementById('dashboard').style.display = 'block';
+        gerarPericias(); 
+        if(personagens.length === 0) novoAgente(); else carregarAgente(0);
+    }
+
+    function gerarPericias() { 
+        document.getElementById('lista-pericias').innerHTML = PERI.map(p => `<label style="display:flex; align-items:center; gap:5px; font-size:0.6rem; color:#666;"><input type="checkbox" class="chk-per" data-nome="${p}" onchange="salvarDados()"> ${p.substring(0,8)}.</label>`).join(''); 
+    }
+
+    function carregarAgente(i) {
+        indexAtual = i;
+        const p = personagens[i];
+        document.getElementById('nome-agente').value = p.nome || "Novo Agente";
+        document.getElementById('nex').value = p.nex || 5;
+        document.getElementById('img-retrato').src = p.foto || "https://i.imgur.com/h679S9V.png";
+        document.getElementById('classe').value = p.classe || "combatente";
+        document.getElementById('origem').value = p.origem || "";
+        document.getElementById('for').value = p.atributos?.for || 1;
+        document.getElementById('agi').value = p.atributos?.agi || 1;
+        document.getElementById('int').value = p.atributos?.int || 1;
+        document.getElementById('vig').value = p.atributos?.vig || 1;
+        document.getElementById('pre').value = p.atributos?.pre || 1;
+
+        if(p.status) {
+            document.getElementById('res-pv').innerText = p.status.pv;
+            document.getElementById('res-pe').innerText = p.status.pe;
+            document.getElementById('res-san').innerText = p.status.san;
         }
-        const sfx = { click: () => playSound(800, 'square', 0.05, 0.02), roll: () => { playSound(400, 'sawtooth', 0.2); setTimeout(()=>playSound(600,'sawtooth',0.1),100); }, warn: () => playSound(150, 'sine', 0.5, 0.2) };
 
-        const PERI = ["Acrobacia", "Adestramento", "Artes", "Atletismo", "Atualidades", "Ciências", "Crime", "Diplomacia", "Enganação", "Fortitude", "Furtividade", "Iniciativa", "Intimidação", "Intuição", "Investigação", "Luta", "Medicina", "Ocultismo", "Percepção", "Pilotagem", "Pontaria", "Profissão", "Reflexos", "Religião", "Sobrevivência", "Tática", "Tecnologia", "Vontade"];
-        const TRILHAS = { combatente: ["Aniquilador", "Comandante", "Guerreiro", "Op. Especiais", "Tropa de Choque"], especialista: ["Atirador Elite", "Infiltrador", "Médico Campo", "Negociador", "Técnico"], ocultista: ["Conduíte", "Flagelador", "Graduado", "Lâmina", "Intuitivo"] };
-        const ORIGENS = { academico: "Investigação e Saber.", "agente-saude": "Medicina.", amnesico: "Duas perícias.", artista: "Artes e Diplomacia.", atleta: "Atletismo e Acrobacia.", chef: "Descanso.", criminoso: "Crime e Furtividade.", "cultista-arrependido": "Ocultismo e Vontade.", desgarrado: "Fortitude.", executivo: "Diplomacia.", investigador: "Investigação.", lutador: "Luta.", magnata: "Diplomacia.", militar: "Pontaria.", operario: "Fortitude.", policial: "Defesa+1.", religioso: "Vontade.", "servidor-publico": "Vontade.", "teorico-conspiracao": "Ocultismo.", "ti-agente": "Tecnologia.", vitima: "Vontade." };
+        document.getElementById('armas-container').innerHTML = ""; 
+        (p.armas || []).forEach(a => addArma(a.n, a.d));
+        
+        document.querySelectorAll('.chk-per').forEach(x => {
+            x.checked = (p.pericias || []).includes(x.dataset.nome);
+        });
 
-        let personagens = JSON.parse(localStorage.getItem('sigo_v3_pro')) || [];
-        let indexAt = 0;
+        renderAbas();
+        atualizarTudo();
+        atualizarOrigem();
+        renderRituaisFicha();
+    }
 
-        window.onload = () => {
-            const title = "ORDO REALITAS"; const el = document.getElementById('typing-title'); let i = 0;
-            function type() { if (i < title.length) { el.innerHTML += title.charAt(i); sfx.click(); i++; setTimeout(type, 120); } } type();
-        };
+    function renderAbas() {
+        const lista = document.getElementById('lista-personagens');
+        lista.innerHTML = personagens.map((p, i) => `<div class="btn-personagem ${i === indexAtual ? 'ativo' : ''}" onclick="carregarAgente(${i})">${p.nome || 'S/ NOME'}</div>`).join('') + `<div class="btn-personagem" onclick="novoAgente()">+ NOVO</div>`;
+    }
 
-        function fazerLogin() {
-            sfx.click(); document.getElementById('tela-login').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
-            gerarPericias(); if(personagens.length === 0) novoAgente(); else carregarAgente(0);
+    function salvarDados() {
+        if(!personagens[indexAtual]) return;
+        const p = personagens[indexAtual];
+        p.nome = document.getElementById('nome-agente').value;
+        p.nex = document.getElementById('nex').value;
+        p.classe = document.getElementById('classe').value;
+        p.trilha = document.getElementById('trilha').value;
+        p.origem = document.getElementById('origem').value;
+        p.atributos = { for: document.getElementById('for').value, agi: document.getElementById('agi').value, int: document.getElementById('int').value, vig: document.getElementById('vig').value, pre: document.getElementById('pre').value };
+        p.status = { pv: document.getElementById('res-pv').innerText, pe: document.getElementById('res-pe').innerText, san: document.getElementById('res-san').innerText };
+        p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
+        p.armas = Array.from(document.querySelectorAll('.arma-row')).map(d => ({n: d.querySelector('input').value, d: d.querySelector('button').innerText}));
+        localStorage.setItem('sigo_v3_pro', JSON.stringify(personagens));
+    }
+
+    function atualizarTudo() {
+        if(!personagens[indexAtual]) return;
+        const n = parseInt(document.getElementById('nex').value) || 5;
+        const c = document.getElementById('classe').value;
+        const v = parseInt(document.getElementById('vig').value) || 0;
+        const i = parseInt(document.getElementById('int').value) || 0;
+        const f = parseInt(document.getElementById('for').value) || 0;
+        const av = Math.floor((n - 5) / 5);
+        
+        const selT = document.getElementById('trilha');
+        selT.disabled = n < 10;
+        selT.innerHTML = n < 10 ? "<option>Bloqueado</option>" : TRILHAS[c].map(t => `<option value="${t}" ${t===personagens[indexAtual].trilha?'selected':''}>${t}</option>`).join('');
+
+        let pB, pN, eB, eN, sB, sN;
+        if (c === 'combatente') { pB=20+v; pN=4+v; eB=2+i; eN=2+i; sB=12; sN=3; }
+        else if (c === 'especialista') { pB=16+v; pN=3+v; eB=3+i; eN=3+i; sB=16; sN=4; }
+        else { pB=12+v; pN=2+v; eB=4+i; eN=4+i; sB=20; sN=5; }
+
+        document.getElementById('max-pv').innerText = pB + (pN * av);
+        document.getElementById('max-pe').innerText = eB + (eN * av);
+        document.getElementById('max-san').innerText = sB + (sN * av);
+        document.getElementById('circ-max').innerText = n>=85?"4º":n>=65?"3º":n>=35?"2º":"1º";
+        document.getElementById('carga-max').innerText = 5 + (f * 5);
+        document.getElementById('count-per').innerText = (c === 'especialista' ? 7 : 3) + i;
+
+        atualizarBarras(); salvarDados();
+    }
+
+    function altStatus(t, v) {
+        const s = document.getElementById(`res-${t}`); 
+        const m = parseInt(document.getElementById(`max-${t}`).innerText);
+        s.innerText = Math.max(0, Math.min(m, (parseInt(s.innerText) || 0) + v));
+        atualizarBarras(); salvarDados();
+    }
+
+    function atualizarBarras() {
+        ['pv', 'pe', 'san'].forEach(t => {
+            const a = parseInt(document.getElementById(`res-${t}`).innerText) || 0;
+            const m = parseInt(document.getElementById(`max-${t}`).innerText) || 1;
+            const bar = document.getElementById(`bar-${t}`);
+            bar.style.width = (a/m*100) + "%";
+            if(t==='pv') {
+                document.body.classList.toggle('vida-baixa', a <= m*0.5 && a > m*0.25);
+                document.body.classList.toggle('vida-critica', a <= m*0.25);
+            }
+        });
+    }
+
+    function rolarRitual(comando) {
+    sfx.roll();
+    const partes = comando.toLowerCase().split('d');
+    const qtd = parseInt(partes[0]) || 1;
+    const faces = parseInt(partes[1]) || 6;
+    
+    let total = 0;
+    for(let i=0; i<qtd; i++) {
+        total += Math.floor(Math.random() * faces) + 1;
+    }
+
+    function rolarFormula(formula) {
+    sfx.roll(); // Mantém o som de dados se você tiver
+    try {
+        // Limpa a fórmula e separa bônus
+        const partes = formula.toLowerCase().replace(/\s/g, '').split('+');
+        const dadoPartes = partes[0].split('d');
+        const qtd = parseInt(dadoPartes[0]) || 1;
+        const faces = parseInt(dadoPartes[1]) || 6;
+        const bonus = parseInt(partes[1]) || 0;
+        
+        let total = 0;
+        let rolagens = [];
+        
+        // Sorteia os dados
+        for(let i=0; i<qtd; i++) {
+            let valor = Math.floor(Math.random() * faces) + 1;
+            rolagens.push(valor);
+            total += valor;
         }
-
-        function gerarPericias() { document.getElementById('lista-pericias').innerHTML = PERI.map(p => `<label style="display:flex; align-items:center; gap:5px; font-size:0.6rem; color:#666;"><input type="checkbox" class="chk-per" data-nome="${p}" onchange="atualizarTudo()"> ${p.substring(0,8)}.</label>`).join(''); }
-
-        function atualizarTudo() {
-            if(!personagens[indexAt]) return;
-            const n = parseInt(document.getElementById('nex').value) || 5;
-            const c = document.getElementById('classe').value;
-            const v = parseInt(document.getElementById('vig').value) || 0;
-            const i = parseInt(document.getElementById('int').value) || 0;
-            const f = parseInt(document.getElementById('for').value) || 0;
-            const av = Math.floor((n - 5) / 5);
-            let pB, pN, eB, eN, sB, sN;
-            
-            const selT = document.getElementById('trilha'); selT.disabled = n < 10;
-            selT.innerHTML = n < 10 ? "<option>Bloqueado</option>" : TRILHAS[c].map(t => `<option value="${t}" ${t===personagens[indexAt].trilha?'selected':''}>${t}</option>`).join('');
-
-            if (c === 'combatente') { pB=20+v; pN=4+v; eB=2+i; eN=2+i; sB=12; sN=3; }
-            else if (c === 'especialista') { pB=16+v; pN=3+v; eB=3+i; eN=3+i; sB=16; sN=4; }
-            else { pB=12+v; pN=2+v; eB=4+i; eN=4+i; sB=20; sN=5; }
-
-            document.getElementById('max-pv').innerText = pB + (pN * av);
-            document.getElementById('max-pe').innerText = eB + (eN * av);
-            document.getElementById('max-san').innerText = sB + (sN * av);
-            document.getElementById('circ-max').innerText = n>=85?"4º":n>=65?"3º":n>=35?"2º":"1º";
-            document.getElementById('carga-max').innerText = 5 + (f * 5);
-            document.getElementById('count-per').innerText = (c === 'especialista' ? 7 : 3) + i;
-
-            let peso = 0; document.querySelectorAll('.it-w').forEach(inp => peso += parseInt(inp.value) || 0);
-            document.getElementById('carga-at').innerText = peso;
-            atualizarBarras(); salvarDados();
+        total += bonus;
+        
+        // --- ATUALIZAÇÃO DO VISOR AMARELO ---
+        // O ID 'resultado-dado' é o que controla o número grande amarelo
+        const visor = document.getElementById('resultado-dado');
+        visor.innerText = total;
+        
+        // Mostra o detalhamento (ex: 3d8+3) no log acima do visor
+        const log = document.getElementById('log-dados');
+        log.innerText = `${formula.toUpperCase()}: (${rolagens.join('+')})${bonus ? '+'+bonus : ''}`;
+        
+    } catch(e) {
+        console.error("Erro ao rolar ritual:", e);
+    }
+}
+    
+    document.getElementById('resultado-dado').innerText = total;
+    document.getElementById('log-dados').innerText = `RITUAL: ${comando.toUpperCase()}`;
+}
+    function rolarD(l) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*l)+1; }
+    function rolarTeste(a) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*20)+1; }
+    function addArma(n="", d="DANO") {
+        const div = document.createElement('div'); div.className = "arma-row";
+        div.innerHTML = `<input type="text" placeholder="Arma" value="${n}" oninput="salvarDados()"><button style="background:var(--sangue); border:none; color:white; font-size:0.6rem;" onclick="rolarD(20)">${d}</button><button onclick="this.parentElement.remove(); salvarDados()" style="border:none; background:transparent; color:#444;">X</button>`;
+        document.getElementById('armas-container').appendChild(div);
+    }
+    function addItem(n="", w=1) {
+        const div = document.createElement('div'); div.className = "item-row";
+        div.innerHTML = `<input type="text" placeholder="Item" value="${n}" oninput="salvarDados()"><input type="number" class="it-w" value="${w}" onchange="atualizarTudo()"><button onclick="this.parentElement.remove(); atualizarTudo()" style="border:none; background:transparent; color:#444;">X</button>`;
+        document.getElementById('itens-container').appendChild(div);
+    }
+    function atualizarOrigem() { document.getElementById('desc-origem').innerText = "Bônus: " + (ORIGENS[document.getElementById('origem').value] || "Nenhum"); salvarDados(); }
+    function mudarFoto() { document.getElementById('input-foto').click(); }
+    function processarFoto(input) {
+        if (input.files && input.files[0]) {
+            const leitor = new FileReader();
+            leitor.onload = (e) => { document.getElementById('img-retrato').src = e.target.result; personagens[indexAtual].foto = e.target.result; salvarDados(); };
+            leitor.readAsDataURL(input.files[0]);
         }
-
-        function altStatus(t, v) {
-            sfx.click(); const s = document.getElementById(`res-${t}`); const m = parseInt(document.getElementById(`max-${t}`).innerText);
-            let val = Math.max(0, Math.min(m, (parseInt(s.innerText) || 0) + v)); s.innerText = val;
-            
-            const body = document.body;
-            body.classList.remove('sanidade-baixa', 'sanidade-critica', 'vida-baixa', 'vida-critica');
-            document.getElementById('bar-pv').classList.remove('barra-falhando');
-
-            const pvAt = parseInt(document.getElementById('res-pv').innerText);
-            const pvMx = parseInt(document.getElementById('max-pv').innerText);
-            const snAt = parseInt(document.getElementById('res-san').innerText);
-            const snMx = parseInt(document.getElementById('max-san').innerText);
-
-            if(pvAt <= 0) { body.classList.add('vida-critica'); sfx.warn(); }
-            else if(pvAt <= (pvMx * 0.25)) { body.classList.add('vida-baixa'); document.getElementById('bar-pv').classList.add('barra-falhando'); }
-            if(snAt <= 0) { body.classList.add('sanidade-critica'); sfx.warn(); }
-            else if(snAt <= (snMx * 0.25)) body.classList.add('sanidade-baixa');
-
-            atualizarBarras(); salvarDados();
+    }
+    function novoAgente() {
+        const novo = { nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [], armas: [], rituais_lista: [], status: {pv: 20, pe: 2, san: 20} };
+        personagens.push(novo); carregarAgente(personagens.length - 1);
+    }
+    function deletarAgente() { if(confirm("Apagar?")) { personagens.splice(indexAtual, 1); if(personagens.length===0) novoAgente(); else carregarAgente(0); } }
+    
+    // --- ALTERAÇÃO SOLICITADA: DESCANSO SEM POPUP ---
+    function descanso(t) {
+    const atributos = ['pv', 'pe', 'san'];
+    atributos.forEach(attr => {
+        let atual = document.getElementById(`res-${attr}`);
+        let max = parseInt(document.getElementById(`max-${attr}`).innerText);
+        
+        if (t === 'longo') {
+            atual.innerText = max; // 100% para todas as barras
+        } else {
+            // Recupera 35% do máximo
+            let rec = Math.floor(max * 0.35);
+            atual.innerText = Math.min(max, parseInt(atual.innerText) + rec);
         }
-
-        function atualizarBarras() {
-            ['pv', 'pe', 'san'].forEach(t => {
-                const a = parseInt(document.getElementById(`res-${t}`).innerText) || 0;
-                const m = parseInt(document.getElementById(`max-${t}`).innerText) || 1;
-                document.getElementById(`bar-${t}`).style.width = (a/m*100) + "%";
-            });
-        }
-
-        function rolarD(l) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*l)+1; }
-        function rolarTeste(a) { sfx.roll(); document.getElementById('resultado-dado').innerText = Math.floor(Math.random()*20)+1; }
-
-        function addArma(n="", d="DANO") {
-            const div = document.createElement('div'); div.className = "arma-row";
-            div.innerHTML = `<input type="text" placeholder="Arma" value="${n}" oninput="salvarDados()"><button style="background:var(--sangue); border:none; color:white; font-size:0.6rem;" onclick="rolarD(20)">${d}</button><button onclick="this.parentElement.remove(); salvarDados()" style="border:none; background:transparent; color:#444;">X</button>`;
-            document.getElementById('armas-container').appendChild(div);
-        }
-
-        function addItem(n="", w=1) {
-            const div = document.createElement('div'); div.className = "item-row";
-            div.innerHTML = `<input type="text" placeholder="Item" value="${n}" oninput="salvarDados()"><input type="number" class="it-w" value="${w}" onchange="atualizarTudo()"><span style="width:30px"></span><button onclick="this.parentElement.remove(); atualizarTudo()" style="border:none; background:transparent; color:#444;">X</button>`;
-            document.getElementById('itens-container').appendChild(div); atualizarTudo();
-        }
-
-        function carregarAgente(idx) {
-            indexAt = idx; const p = personagens[idx];
-            document.getElementById('nome-agente').value = p.nome || "";
-            document.getElementById('nex').value = p.nex || 5;
-            document.getElementById('classe').value = p.classe || "combatente";
-            document.getElementById('for').value = p.atributos?.for || 1;
-            document.getElementById('agi').value = p.atributos?.agi || 1;
-            document.getElementById('int').value = p.atributos?.int || 1;
-            document.getElementById('vig').value = p.atributos?.vig || 1;
-            document.getElementById('pre').value = p.atributos?.pre || 1;
-            document.getElementById('armas-container').innerHTML = ""; (p.armas || []).forEach(a => addArma(a.n, a.d));
-            document.getElementById('itens-container').innerHTML = ""; (p.itens || []).forEach(i => addItem(i.n, i.w));
-            document.getElementById('rituais').value = p.rituais || "";
-            atualizarTudo();
-            if(p.status) { ['pv','pe','san'].forEach(t => document.getElementById(`res-${t}`).innerText = p.status[t]); }
-            document.querySelectorAll('.chk-per').forEach(x => x.checked = (p.pericias || []).includes(x.dataset.nome));
-            atualizarBarras(); renderAbas(); atualizarOrigem();
-        }
-
-        function salvarDados() {
-            if(!personagens[indexAt]) return;
-            const p = personagens[indexAt];
-            p.nome = document.getElementById('nome-agente').value; p.nex = document.getElementById('nex').value;
-            p.classe = document.getElementById('classe').value; p.trilha = document.getElementById('trilha').value;
-            p.origem = document.getElementById('origem').value;
-            p.atributos = { for: document.getElementById('for').value, agi: document.getElementById('agi').value, int: document.getElementById('int').value, vig: document.getElementById('vig').value, pre: document.getElementById('pre').value };
-            p.status = { pv: document.getElementById('res-pv').innerText, pe: document.getElementById('res-pe').innerText, san: document.getElementById('res-san').innerText };
-            p.pericias = Array.from(document.querySelectorAll('.chk-per:checked')).map(x => x.dataset.nome);
-            p.rituais = document.getElementById('rituais').value;
-            p.armas = Array.from(document.querySelectorAll('.arma-row')).map(d => ({n: d.querySelector('input').value, d: d.querySelector('button').innerText}));
-            p.itens = Array.from(document.querySelectorAll('.item-row')).map(d => ({n: d.querySelector('input').value, w: d.querySelector('.it-w').value}));
-            localStorage.setItem('sigo_v3_pro', JSON.stringify(personagens)); renderAbas();
-        }
-
-        function novoAgente() { personagens.push({ nome: "Novo Agente", nex: 5, classe: "combatente", atributos: {for:1,agi:1,int:1,vig:1,pre:1}, pericias: [], armas: [], itens: [], status: null }); carregarAgente(personagens.length - 1); }
-        function renderAbas() { document.getElementById('lista-personagens').innerHTML = personagens.map((p, i) => `<div class="btn-personagem ${i===indexAt?'ativo':''}" onclick="carregarAgente(${i})">${p.nome || 'A'}</div>`).join('') + `<div class="btn-personagem" onclick="novoAgente()">+</div>`; }
-        function descanso(tipo) { ['pv', 'pe', 'san'].forEach(t => { const m = parseInt(document.getElementById(`max-${t}`).innerText); if(tipo==='longo') document.getElementById(`res-${t}`).innerText = m; else if(t !== 'san') { let v = parseInt(document.getElementById(`res-${t}`).innerText); document.getElementById(`res-${t}`).innerText = Math.min(m, v + Math.floor(m/2)); } }); altStatus('pv', 0); }
-        function atualizarOrigem() { document.getElementById('desc-origem').innerText = "Bônus: " + (ORIGENS[document.getElementById('origem').value] || "Nenhum"); salvarDados(); }
-        function mudarFoto() { const url = prompt("URL da Foto:"); if(url) document.getElementById('img-retrato').src = url; }
-        function deletarAgente() { if(confirm("Apagar permanentemente?")) { personagens.splice(indexAt, 1); if(personagens.length===0) novoAgente(); else carregarAgente(0); } }
-
-function exportarPDF() {
-    // 1. Tira o brilho de glitch e animações que podem bugar o PDF
-    const abas = document.querySelectorAll('.btn-personagem');
-    abas.forEach(a => a.classList.remove('aba-glitch'));
-
-    // 2. Comando nativo do navegador para imprimir
-    // Dica: Na janela que abrir, escolha "Salvar como PDF" no destino da impressora
-    window.print();
+    });
+    atualizarBarras();
+    salvarDados();
 }
 
+    function abrirGrimorio() { document.getElementById('modalGrimorio').style.display = 'block'; filtrarRitual('todos'); }
+    function fecharGrimorio() { document.getElementById('modalGrimorio').style.display = 'none'; }
+    function filtrarRitual(e, btn) {
+        if(btn) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+        const list = document.getElementById('lista-grimorio-rituais');
+        const filtrados = e === 'todos' ? DB_RITUAIS : DB_RITUAIS.filter(r => r.e === e);
+        list.innerHTML = filtrados.map(r => `
+            <div class="ritual-item-grimorio">
+                <span>${r.n.toUpperCase()} (${r.e.toUpperCase()})</span>
+                <button class="btn-add-ritual" onclick="aprenderRitual('${r.n}')">+ APRENDER</button>
+            </div>
+        `).join('');
+    }
+    function aprenderRitual(n) {
+        const p = personagens[indexAtual];
+        if(!p.rituais_lista) p.rituais_lista = [];
+        if(p.rituais_lista.includes(n)) return alert("Já conhece!");
+        p.rituais_lista.push(n); salvarDados(); renderRituaisFicha(); fecharGrimorio();
+    }
+    function rolarFormula(formula) {
+    if (typeof sfx !== 'undefined') sfx.roll(); // Toca o som se existir
+    
+    try {
+        // Divide a fórmula (ex: 3d8+3)
+        const partes = formula.toLowerCase().replace(/\s/g, '').split('+');
+        const dadoPartes = partes[0].split('d');
+        const qtd = parseInt(dadoPartes[0]) || 1;
+        const faces = parseInt(dadoPartes[1]) || 6;
+        const bonus = parseInt(partes[1]) || 0;
+        
+        let total = 0;
+        let rolagens = [];
+        
+        for(let i = 0; i < qtd; i++) {
+            let valor = Math.floor(Math.random() * faces) + 1;
+            rolagens.push(valor);
+            total += valor;
+        }
+        total += bonus;
+        
+        // --- AQUI APARECE NO "0" AMARELO ---
+        const visor = document.getElementById('resultado-dado');
+        if (visor) {
+            visor.innerText = total;
+        }
 
+        // Mostra o log detalhado acima do número
+        const log = document.getElementById('log-dados');
+        if (log) {
+            log.innerText = `${formula.toUpperCase()}: (${rolagens.join('+')})${bonus ? '+'+bonus : ''}`;
+        }
+    } catch(e) {
+        console.error("Erro na rolagem:", e);
+    }
+}
+    function renderRituaisFicha() {
+    const p = personagens[indexAtual];
+    const container = document.getElementById('meus-rituais');
+    
+    container.innerHTML = (p.rituais_lista || []).map((nomeRitual, i) => {
+        const dadosRitual = DB_RITUAIS.find(r => r.n === nomeRitual);
+        const f = dadosRitual ? dadosRitual.d : { n: "1d6", d: "1d6", v: "1d6" };
+        const descricao = dadosRitual ? dadosRitual.desc : "Descrição não disponível.";
+
+        return `
+            <div style="background:#0a0a0a; border:1px solid #333; padding:10px; margin-top:10px; border-left: 2px solid #9932cc;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span onclick="alert('${descricao}')" style="color:#9932cc; font-size:0.75rem; font-weight:bold; cursor:pointer; text-decoration:underline;">
+                        ${nomeRitual.toUpperCase()}
+                    </span>
+                    <button onclick="removerRitual(${i})" style="background:transparent; border:none; color:#444;">X</button>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                    <div style="text-align:center;">
+                        <span style="font-size:0.45rem; color:#666; display:block; margin-bottom:3px;">NORMAL</span>
+                        <button onclick="rolarFormula('${f.n}')" style="width:100%; font-size:0.55rem; background:#1a002a; border:1px solid #9932cc; color:#fff; padding:5px;">${f.n}</button>
+                    </div>
+                    <div style="text-align:center;">
+                        <span style="font-size:0.45rem; color:#666; display:block; margin-bottom:3px;">DISCENTE</span>
+                        <button onclick="rolarFormula('${f.d}')" style="width:100%; font-size:0.55rem; background:#1a002a; border:1px solid #9932cc; color:#fff; padding:5px;">${f.d}</button>
+                    </div>
+                    <div style="text-align:center;">
+                        <span style="font-size:0.45rem; color:#666; display:block; margin-bottom:3px;">VERDADEIRO</span>
+                        <button onclick="rolarFormula('${f.v}')" style="width:100%; font-size:0.55rem; background:#1a002a; border:1px solid #9932cc; color:#fff; padding:5px;">${f.v}</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+    function removerRitual(i) { personagens[indexAtual].rituais_lista.splice(i, 1); salvarDados(); renderRituaisFicha(); }
+    function atualizarNome(v) { personagens[indexAtual].nome = v; renderAbas(); salvarDados(); }
+
+    async function exportarPDF() {
+        const { jsPDF } = window.jspdf;
+        const ficha = document.querySelector('.container-ficha');
+        const canvas = await html2canvas(ficha, { scale: 2, backgroundColor: '#000' });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`ficha_${personagens[indexAtual].nome}.pdf`);
+    }
     </script>
 </body>
 </html>
